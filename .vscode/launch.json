@@ -14,6 +14,21 @@
       "runtimeArgs": [
         "run",
         "--unstable",
+        "--allow-all",
+        "--allow-env"
+      ],
+      "outputCapture": "std",
+    },
+    {
+      "name": "Debug Run Deno",
+      "request": "launch",
+      "type": "pwa-node",
+      "program": "${file}",
+      "cwd": "${workspaceFolder}",
+      "runtimeExecutable": "deno",
+      "runtimeArgs": [
+        "run",
+        "--unstable",
         "--inspect-brk",
         "--allow-all",
         "--allow-env"
