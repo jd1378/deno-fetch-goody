@@ -2,6 +2,8 @@
 
 This library offers a fetch wrapper that automatically adds `Content-Type` header. also it can accepts object as body now to send as json.
 
+Also adds `Accept` header with value `application/json, text/plain, */*` if not already set by you.
+
 ## usage
 
 you can import `wrapFetch` from `mod.ts` file.
