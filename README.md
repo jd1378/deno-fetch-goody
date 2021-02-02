@@ -20,7 +20,7 @@ const fetch = wrapFetch();
 Or
 
 ```js
-// you can also pass your own fetch function, allowing for wrapping fetch multiple times
+// you can also pass your own wrapped fetch function, allowing for wrapping fetch multiple times
 const fetch = wrapFetch({ fetchFn: yourFetch });
 ```
 
