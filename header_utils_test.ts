@@ -87,3 +87,25 @@ Deno.test("appendHeader works if header is of type Array", () => {
   assertStrictEquals(headers.length, 1);
   equal(headers[0], ["foo", "bar, baz"]);
 });
+
+Deno.test("getHeader works if header is of type Headers", () => {
+  const headers = new Headers();
+  headers.set("foo", "bar");
+
+  assertStrictEquals(getHeader(headers, "foo"), "bar");
+});
+
+Deno.test("getHeader works if header is of type object", () => {
+  const headers: Record<string, string> = {
+    foo: "bar",
+  };
+  assertStrictEquals(getHeader(headers, "foo"), "bar");
+});
+
+Deno.test("getHeader works if header is of type Array", () => {
+  const headers: string[][] = [
+    ["foo", "bar"],
+  ];
+
+  assertStrictEquals(getHeader(headers, "foo"), "bar");
+});
