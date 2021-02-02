@@ -21,7 +21,7 @@ Or
 
 ```js
 // you can also pass your own fetch function, allowing for wrapping fetch multiple times
-const fetch = wrapFetch({ fetch: yourFetch });
+const fetch = wrapFetch({ fetchFn: yourFetch });
 ```
 
 ## test
