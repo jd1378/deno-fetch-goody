@@ -9,21 +9,41 @@ Also adds `Accept` header with value `application/json, text/plain, */*` if not 
 you can import `wrapFetch` from `mod.ts` file.
 
 ```js
-export { wrapFetch } from 'https://deno.land/x/fetch_goody@v1.0.0/mod.ts';
+export { wrapFetch } from 'https://deno.land/x/fetch_goody@v1.1.0/mod.ts';
 ```
 
 ### wrapFetch
 
 ```js
 // this simple
-const fetch = wrapFetch();
+const wrappedfetch = wrapFetch();
 ```
 
 Or
 
 ```js
 // you can also pass your own wrapped fetch function, allowing for wrapping fetch multiple times
-const fetch = wrapFetch({ fetchFn: yourFetch });
+const wrappedfetch = wrapFetch({ fetchFn: yourFetch });
+```
+
+#### using the new wrappedfetch
+
+```js
+
+const resp1 = await wrappedfetch("url",{
+  form: {
+    'foo': 'bar'
+  }
+}); // sets method to POST by default and converts object to FormData.
+
+// or 
+
+const resp2 = await wrappedfetch("url",{
+  body: {
+    'foo': 'bar'
+  }
+}); // is sent as json and corresponding header is set
+// also if method is not defined for this, it will be set as POST
 ```
 
 ## test
