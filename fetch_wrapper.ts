@@ -106,6 +106,9 @@ export function wrapFetch(
       for (const key of Object.keys(interceptedInit.form)) {
         interceptedInit.body.append(key, interceptedInit.form[key]);
       }
+      if (!interceptedInit.method) {
+        interceptedInit.method = "POST";
+      }
     }
 
     if (interceptedInit.body) {
