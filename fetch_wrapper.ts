@@ -22,6 +22,7 @@ function transformData(
     | string[][]
     | Record<string, string>
     | undefined,
+  init?: RequestInit | ExtendedRequestInit,
 ):
   | string
   | ArrayBuffer
@@ -59,6 +60,9 @@ function transformData(
       "Content-Type",
       "application/json;charset=utf-8",
     );
+    if (init && !init.method) {
+      init.method = "POST";
+    }
     return JSON.stringify(data);
   }
   // the default header if type undefined
@@ -115,6 +119,7 @@ export function wrapFetch(
       interceptedInit.body = transformData(
         interceptedInit.body,
         interceptedInit.headers,
+        interceptedInit,
       );
     }
 
