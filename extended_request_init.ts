@@ -1,4 +1,8 @@
-// deno-lint-ignore ban-ts-comment
-// @ts-ignore
-// deno-lint-ignore no-empty-interface
-export interface ExtendedRequestInit extends RequestInit {}
+interface RequestInitDiff {
+  form?: Record<string, string>;
+  body?: Record<string, unknown> | BodyInit | null;
+}
+
+export type ExtendedRequestInit =
+  & RequestInitDiff
+  & Omit<RequestInit, keyof RequestInitDiff>;

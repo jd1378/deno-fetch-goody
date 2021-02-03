@@ -2,12 +2,6 @@ import * as utils from "./utils.ts";
 import { getHeader, setHeader } from "./header_utils.ts";
 import { ExtendedRequestInit } from "./extended_request_init.ts";
 
-declare module "./extended_request_init.ts" {
-  interface ExtendedRequestInit {
-    body: Record<string, unknown>;
-  }
-}
-
 /**
  * Transforms data and adds corresponding headers if possible.
  */
@@ -67,6 +61,12 @@ function transformData(
     );
     return JSON.stringify(data);
   }
+  // the default header if type undefined
+  setHeader(
+    headers,
+    "Content-Type",
+    "application/x-www-form-urlencoded",
+  );
   return data;
 }
 
@@ -101,20 +101,18 @@ export function wrapFetch(
       );
     }
 
+    if ("form" in interceptedInit && interceptedInit.form) {
+      interceptedInit.body = new FormData();
+      for (const key of Object.keys(interceptedInit.form)) {
+        interceptedInit.body.append(key, interceptedInit.form[key]);
+      }
+    }
+
     if (interceptedInit.body) {
       interceptedInit.body = transformData(
         interceptedInit.body,
         interceptedInit.headers,
       );
-
-      // only when a body is sent we set a default Content-Type
-      if (!getHeader(interceptedInit.headers, "Content-Type")) {
-        setHeader(
-          interceptedInit.headers,
-          "Content-Type",
-          "application/x-www-form-urlencoded",
-        );
-      }
     }
 
     const response = await fetchFn(input, interceptedInit as RequestInit);
