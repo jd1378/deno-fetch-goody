@@ -233,3 +233,18 @@ Deno.test("WrappedFetch sends FormData when form is defined", async () => {
     await closeServers();
   }
 });
+
+Deno.test("WrappedFetch sets the User-Agent if given at creation", async () => {
+  try {
+    handlers.push(handleServer1());
+
+    const wrappedFetch = wrapFetch({ userAgent: "foo v1.0" });
+    const headerString = await wrappedFetch(serverOneUrl + "/user-agent").then((
+      r,
+    ) => r.text());
+
+    assertStrictEquals(headerString, "foo v1.0");
+  } finally {
+    await closeServers();
+  }
+});

@@ -80,7 +80,7 @@ function transformData(
  *  This allows wrapping your fetch function multiple times.
  */
 export function wrapFetch(
-  { fetchFn = fetch } = {},
+  { fetchFn = fetch, userAgent = "" } = {},
 ) {
   return async function wrappedFetch(
     input: string | Request | URL,
@@ -102,6 +102,14 @@ export function wrapFetch(
         interceptedInit.headers,
         "Accept",
         "application/json, text/plain, */*",
+      );
+    }
+    // setup user agent if set
+    if (userAgent) {
+      setHeader(
+        interceptedInit.headers,
+        "User-Agent",
+        userAgent,
       );
     }
 
