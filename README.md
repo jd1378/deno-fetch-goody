@@ -9,7 +9,7 @@ Also adds `Accept` header with value `application/json, text/plain, */*` if not 
 you can import `wrapFetch` from `mod.ts` file.
 
 ```js
-export { wrapFetch } from 'https://deno.land/x/fetch_goody@v1.1.0/mod.ts';
+export { wrapFetch } from 'https://deno.land/x/fetch_goody@v1.2.0/mod.ts';
 ```
 
 ### wrapFetch

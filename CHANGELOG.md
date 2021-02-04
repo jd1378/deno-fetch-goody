@@ -1,6 +1,10 @@
 
 # Changelog
 
+# v1.2.0
+
+- Add support for user-agent when wrapping.
+
 # v1.1.0
 
 - Very important fix for `ExtendedRequestInit` type. The type is also exported now.
