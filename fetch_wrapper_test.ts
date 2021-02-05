@@ -5,7 +5,6 @@ import {
 import { serve, Server } from "https://deno.land/std@0.85.0/http/server.ts";
 import { wrapFetch } from "./mod.ts";
 import { delay } from "https://deno.land/std@0.85.0/async/delay.ts";
-import { Buffer } from "https://deno.land/std@0.85.0/node/buffer.ts";
 import { MultipartReader } from "https://deno.land/std@0.85.0/mime/multipart.ts";
 
 let server1: Server | undefined;
