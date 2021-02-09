@@ -309,7 +309,7 @@ Deno.test("WrappedFetch runs init.validator if set", async () => {
     let initPassed = false;
 
     // for string
-    const paramsString = await wrappedFetch(serverOneUrl + "/user-agent", {
+    await wrappedFetch(serverOneUrl + "/user-agent", {
       validator(response, init) {
         assertStrictEquals(response.status, 200);
         validatorRan = true;
@@ -350,7 +350,7 @@ Deno.test("WrappedFetch runs WrapperOption.validator if set", async () => {
     });
 
     // for string
-    const paramsString = await wrappedFetch(serverOneUrl + "/user-agent", {
+    await wrappedFetch(serverOneUrl + "/user-agent", {
       body: {
         "baz": "zab",
       },
@@ -389,7 +389,7 @@ Deno.test("WrappedFetch runs both validators in order", async () => {
     let secondInitPassed = false;
 
     // for string
-    const paramsString = await wrappedFetch(serverOneUrl + "/user-agent", {
+    await wrappedFetch(serverOneUrl + "/user-agent", {
       body: {
         "baz": "zab",
       },
