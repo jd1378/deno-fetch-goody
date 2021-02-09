@@ -156,6 +156,13 @@ export function wrapFetch(
 
     const response = await fetchFn(input, interceptedInit as RequestInit);
 
+    if (
+      "validator" in interceptedInit &&
+      typeof interceptedInit.validator === "function"
+    ) {
+      await interceptedInit.validator(response);
+    }
+
     return response;
   };
 }

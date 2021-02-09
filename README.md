@@ -9,7 +9,7 @@ Also adds `Accept` header with value `application/json, text/plain, */*` if not 
 you can import `wrapFetch` from `mod.ts` file.
 
 ```js
-export { wrapFetch } from 'https://deno.land/x/fetch_goody@v1.3.3/mod.ts';
+export { wrapFetch } from 'https://deno.land/x/fetch_goody@v1.4.0/mod.ts';
 ```
 
 ### wrapFetch
@@ -45,12 +45,26 @@ const resp2 = await wrappedfetch("url",{
 }); // is sent as json and corresponding header is set
 // also if method is not defined for this, it will be set as POST
 
+// other features:
+
 // adding query string
+
 const resp3 = await wrappedfetch("url",{
   qs: {
     'foo': 'bar'
   }
 }); // results to url being sent to be "url?foo=bar"
+
+// adding a response validator where you can throw errors
+
+const resp4 = await wrappedfetch("url",{
+  validator(response: Response) {
+    if (response.status > 200) {
+      throw new Error('yada');
+    }
+  }
+});
+
 ```
 
 ## test

@@ -298,3 +298,28 @@ Deno.test("WrappedFetch sets url search parameters for qs option", async () => {
     await closeServers();
   }
 });
+
+Deno.test("WrappedFetch runs validator option with passigng response if set", async () => {
+  try {
+    handlers.push(handleServer1());
+
+    const wrappedFetch = wrapFetch();
+
+    let validatorRan = false;
+
+    // for string
+    const paramsString = await wrappedFetch(serverOneUrl + "/user-agent", {
+      validator(response) {
+        assertStrictEquals(response.status, 200);
+        validatorRan = true;
+      },
+    }).then((r) => r.text());
+
+    assertStrictEquals(
+      validatorRan,
+      true,
+    );
+  } finally {
+    await closeServers();
+  }
+});

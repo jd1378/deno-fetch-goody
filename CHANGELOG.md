@@ -1,6 +1,11 @@
 
 # Changelog
 
+# v1.4.0
+
+- add validator option
+- update docs a bit
+
 # v1.3.3
 
 - fix bug introduced in last version and add test
