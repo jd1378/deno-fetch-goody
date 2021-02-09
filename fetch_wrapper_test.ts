@@ -299,7 +299,7 @@ Deno.test("WrappedFetch sets url search parameters for qs option", async () => {
   }
 });
 
-Deno.test("WrappedFetch runs validator option with passigng response if set", async () => {
+Deno.test("WrappedFetch runs init.validator if set", async () => {
   try {
     handlers.push(handleServer1());
 
@@ -327,6 +327,95 @@ Deno.test("WrappedFetch runs validator option with passigng response if set", as
     );
     assertStrictEquals(
       initPassed,
+      true,
+    );
+  } finally {
+    await closeServers();
+  }
+});
+
+Deno.test("WrappedFetch runs WrapperOption.validator if set", async () => {
+  try {
+    handlers.push(handleServer1());
+
+    let validatorRan = false;
+    let initPassed = false;
+
+    const wrappedFetch = wrapFetch({
+      validator(response, init) {
+        assertStrictEquals(response.status, 200);
+        validatorRan = true;
+        initPassed = init.method === "delete";
+      },
+    });
+
+    // for string
+    const paramsString = await wrappedFetch(serverOneUrl + "/user-agent", {
+      body: {
+        "baz": "zab",
+      },
+      method: "delete",
+    }).then((r) => r.text());
+
+    assertStrictEquals(
+      validatorRan,
+      true,
+    );
+    assertStrictEquals(
+      initPassed,
+      true,
+    );
+  } finally {
+    await closeServers();
+  }
+});
+
+Deno.test("WrappedFetch runs both validators in order", async () => {
+  try {
+    handlers.push(handleServer1());
+
+    let validatorRan = false;
+    let initPassed = false;
+
+    const wrappedFetch = wrapFetch({
+      validator(response, init) {
+        assertStrictEquals(response.status, 200);
+        validatorRan = true;
+        initPassed = init.method === "delete";
+      },
+    });
+
+    let secondValidatorRan = false;
+    let secondInitPassed = false;
+
+    // for string
+    const paramsString = await wrappedFetch(serverOneUrl + "/user-agent", {
+      body: {
+        "baz": "zab",
+      },
+      method: "delete",
+      validator(response, init) {
+        assertStrictEquals(response.status, 200);
+        secondValidatorRan = true;
+        secondInitPassed = init.method === "delete";
+      },
+    }).then((r) => r.text());
+
+    assertStrictEquals(
+      validatorRan,
+      true,
+    );
+    assertStrictEquals(
+      initPassed,
+      true,
+    );
+
+    assertStrictEquals(
+      secondValidatorRan,
+      true,
+    );
+    assertStrictEquals(
+      secondInitPassed,
       true,
     );
   } finally {

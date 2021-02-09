@@ -1,6 +1,13 @@
 
 # Changelog
 
+# v2.0.0
+
+- BREAKING CHANGE: rename `fetchFn` to `fetch` in WrapFetchOptions
+- create WrapFetchOptions type
+- add a validator option to WrapFetchOptions
+- the validator that is passed to WrapFetchOptions will run before the validator of ExtendedRequestInit
+  
 # v1.5.0
 
 - pass init to validator

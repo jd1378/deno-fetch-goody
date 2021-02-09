@@ -74,21 +74,31 @@ function transformData(
   return data;
 }
 
+export type WrapFetchOptions = {
+  /** your own fetch function. defaults to global fetch. */
+  fetch?: typeof fetch;
+  /** user agent header string */
+  userAgent?: string;
+  /** validator to run after each response with this fetch */
+  validator?:
+    ((response: Response, init: ExtendedRequestInit) => void | Promise<void>);
+};
+
 /**
  * @param options - Wrap options
  * @param options.fetchFn - If no `fetchFn` is provided, will default to global fetch.
  *  This allows wrapping your fetch function multiple times.
  */
-export function wrapFetch(
-  { fetchFn = fetch, userAgent = "" } = {},
-) {
+export function wrapFetch(options?: WrapFetchOptions) {
+  const { fetch = globalThis.fetch, userAgent, validator } = options || {};
+
   return async function wrappedFetch(
     input: string | Request | URL,
     init?: ExtendedRequestInit | RequestInit | undefined,
   ) {
     // let fetch handle the error
     if (!input) {
-      return await fetchFn(input);
+      return await fetch(input);
     }
 
     const interceptedInit = init || {};
@@ -154,7 +164,11 @@ export function wrapFetch(
       );
     }
 
-    const response = await fetchFn(input, interceptedInit as RequestInit);
+    const response = await fetch(input, interceptedInit as RequestInit);
+
+    if (typeof validator === "function") {
+      await validator(response, interceptedInit);
+    }
 
     if (
       "validator" in interceptedInit &&
