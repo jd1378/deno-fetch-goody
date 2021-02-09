@@ -132,7 +132,9 @@ export function wrapFetch(
 
       if (input instanceof URL) {
         for (const [spKey, spValue] of searchParams.entries()) {
-          input.searchParams.set(spKey, spValue);
+          if (spValue !== undefined) {
+            input.searchParams.set(spKey, spValue);
+          }
         }
       }
     }
