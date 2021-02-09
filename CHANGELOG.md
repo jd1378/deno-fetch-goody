@@ -1,6 +1,10 @@
 
 # Changelog
 
+# v1.3.2
+
+- allow qs value to be undefined
+
 # v1.3.1
 
 - only add qs if value not undefined
