@@ -1,6 +1,10 @@
 
 # Changelog
 
+# v1.3.0
+
+- added support for "qs" option
+
 # v1.2.1
 
 - fix some code smells
