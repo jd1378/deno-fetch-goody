@@ -44,6 +44,13 @@ const resp2 = await wrappedfetch("url",{
   }
 }); // is sent as json and corresponding header is set
 // also if method is not defined for this, it will be set as POST
+
+// adding query string
+const resp3 = await wrappedfetch("url",{
+  qs: {
+    'foo': 'bar'
+  }
+}); // results to url being sent to be "url?foo=bar"
 ```
 
 ## test
