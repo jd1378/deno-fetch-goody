@@ -1,6 +1,10 @@
 
 # Changelog
 
+# v2.1.0
+
+- Allow array of strings as value in form option.
+
 # v2.0.0
 
 - BREAKING CHANGE: rename `fetchFn` to `fetch` in WrapFetchOptions

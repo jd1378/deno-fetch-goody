@@ -1,17 +1,16 @@
 import {
   assert,
   assertStrictEquals,
-} from "https://deno.land/std@0.85.0/testing/asserts.ts";
-import { serve, Server } from "https://deno.land/std@0.85.0/http/server.ts";
+} from "https://deno.land/std@0.86.0/testing/asserts.ts";
+import { serve, Server } from "https://deno.land/std@0.86.0/http/server.ts";
 import { wrapFetch } from "./mod.ts";
-import { delay } from "https://deno.land/std@0.85.0/async/delay.ts";
-import { MultipartReader } from "https://deno.land/std@0.85.0/mime/multipart.ts";
+import { delay } from "https://deno.land/std@0.86.0/async/delay.ts";
+import { MultipartReader } from "https://deno.land/std@0.86.0/mime/multipart.ts";
 
 let server1: Server | undefined;
 const serverOneUrl = "http://localhost:54933";
 
-let handlers: Promise<void | string>[];
-handlers = [];
+let handlers: Promise<void | string>[] = [];
 
 // deno-lint-ignore no-explicit-any
 function getHeaderValueParams(value: any) {
@@ -39,7 +38,8 @@ async function handleServer1() {
   for await (const request of server1) {
     let bodyContent;
     if (request.url.endsWith("formdata")) {
-      const params = getHeaderValueParams(request.headers.get("content-type"));
+      const contentTypeHeader = request.headers.get("content-type");
+      const params = getHeaderValueParams(contentTypeHeader);
       const reader = new MultipartReader(request.body, params.get("boundary"));
       const form = await reader.readForm();
       const data = [];
@@ -230,6 +230,30 @@ Deno.test("WrappedFetch sends FormData when form is defined", async () => {
     assertStrictEquals(
       response,
       "test=sa",
+    );
+  } finally {
+    await closeServers();
+  }
+});
+
+Deno.test("WrappedFetch form option supports array", async () => {
+  try {
+    handlers.push(handleServer1());
+
+    const wrappedFetch = wrapFetch();
+
+    const response = await wrappedFetch(serverOneUrl + "/formdata", {
+      method: "POST",
+      form: {
+        "foo": ["bar", "baz"],
+      },
+    }).then((
+      r,
+    ) => r.text());
+
+    assertStrictEquals(
+      response,
+      "foo=bar&foo=baz", // test fails, but data is sent: https://github.com/denoland/deno_std/issues/716
     );
   } finally {
     await closeServers();
