@@ -48,6 +48,9 @@ async function handleServer1() {
       }
       bodyContent = new URLSearchParams(data)
         .toString();
+    } else if (request.url.startsWith("/qsparams")) {
+      bodyContent = new URL("http://foo.bar" + request.url).searchParams
+        .toString();
     } else {
       bodyContent = request.headers.get(request.url.substr(1)) || "";
     }
@@ -243,6 +246,35 @@ Deno.test("WrappedFetch sets the User-Agent if given at creation", async () => {
     ) => r.text());
 
     assertStrictEquals(headerString, "foo v1.0");
+  } finally {
+    await closeServers();
+  }
+});
+
+Deno.test("WrappedFetch sets url search parameters for qs option", async () => {
+  try {
+    handlers.push(handleServer1());
+
+    const wrappedFetch = wrapFetch();
+
+    const qs = {
+      foo: "bar",
+      baz: "thud",
+    };
+    // for string
+    let paramsString = await wrappedFetch(serverOneUrl + "/qsparams", {
+      qs,
+    }).then((r) => r.text());
+
+    assertStrictEquals(paramsString, new URLSearchParams(qs).toString());
+
+    // for URL
+    paramsString = await wrappedFetch(new URL(serverOneUrl + "/qsparams"), {
+      qs,
+    }).then((r) => r.text());
+    assertStrictEquals(paramsString, new URLSearchParams(qs).toString());
+
+    // Request type is not supported
   } finally {
     await closeServers();
   }

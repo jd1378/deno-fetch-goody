@@ -123,6 +123,20 @@ export function wrapFetch(
       }
     }
 
+    if ("qs" in interceptedInit && interceptedInit.qs) {
+      const searchParams = new URLSearchParams(interceptedInit.qs);
+      // doesn't support relative urls
+      if (typeof input === "string" && input.includes("://")) {
+        input = new URL(input);
+      }
+
+      if (input instanceof URL) {
+        for (const [spKey, spValue] of searchParams.entries()) {
+          input.searchParams.set(spKey, spValue);
+        }
+      }
+    }
+
     if (interceptedInit.body) {
       interceptedInit.body = transformData(
         interceptedInit.body,
