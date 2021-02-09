@@ -1,6 +1,10 @@
 
 # Changelog
 
+# v1.3.3
+
+- fix bug introduced in last version and add test
+
 # v1.3.2
 
 - allow qs value to be undefined
