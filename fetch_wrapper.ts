@@ -124,7 +124,14 @@ export function wrapFetch(
     }
 
     if ("qs" in interceptedInit && interceptedInit.qs) {
-      const searchParams = new URLSearchParams(interceptedInit.qs);
+      // remove undefined values
+      const filteredQs = Object.entries(interceptedInit.qs).filter(
+        ([_, qv]) => {
+          if (qv !== undefined) return true;
+          return false;
+        },
+      ) as [string, string][];
+      const searchParams = new URLSearchParams(filteredQs);
       // doesn't support relative urls
       if (typeof input === "string" && input.includes("://")) {
         input = new URL(input);

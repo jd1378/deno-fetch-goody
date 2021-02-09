@@ -260,19 +260,38 @@ Deno.test("WrappedFetch sets url search parameters for qs option", async () => {
     const qs = {
       foo: "bar",
       baz: "thud",
+      goo: undefined,
     };
+
+    const filteredQs = Object.entries(qs).filter(
+      ([_, qv]) => {
+        if (qv !== undefined) return true;
+        return false;
+      },
+    ) as [string, string][];
+
+    const assertionQueryString = new URLSearchParams(filteredQs).toString();
+
+    assertStrictEquals(assertionQueryString.includes("undefined"), false);
+
     // for string
     let paramsString = await wrappedFetch(serverOneUrl + "/qsparams", {
       qs,
     }).then((r) => r.text());
 
-    assertStrictEquals(paramsString, new URLSearchParams(qs).toString());
+    assertStrictEquals(
+      paramsString,
+      assertionQueryString,
+    );
 
     // for URL
     paramsString = await wrappedFetch(new URL(serverOneUrl + "/qsparams"), {
       qs,
     }).then((r) => r.text());
-    assertStrictEquals(paramsString, new URLSearchParams(qs).toString());
+    assertStrictEquals(
+      paramsString,
+      assertionQueryString,
+    );
 
     // Request type is not supported
   } finally {
