@@ -7,7 +7,8 @@ interface RequestInitDiff {
   body?: Record<string, unknown> | BodyInit | null;
   /** a function that will be called before returning response.
    *  can be used for validating response and throwing errors */
-  validator?: ((response: Response) => void | Promise<void>);
+  validator?:
+    ((response: Response, init: ExtendedRequestInit) => void | Promise<void>);
 }
 
 export type ExtendedRequestInit =

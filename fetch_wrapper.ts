@@ -160,7 +160,7 @@ export function wrapFetch(
       "validator" in interceptedInit &&
       typeof interceptedInit.validator === "function"
     ) {
-      await interceptedInit.validator(response);
+      await interceptedInit.validator(response, interceptedInit);
     }
 
     return response;

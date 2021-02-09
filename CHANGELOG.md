@@ -1,6 +1,10 @@
 
 # Changelog
 
+# v1.5.0
+
+- pass init to validator
+  
 # v1.4.0
 
 - add validator option

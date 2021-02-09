@@ -306,17 +306,27 @@ Deno.test("WrappedFetch runs validator option with passigng response if set", as
     const wrappedFetch = wrapFetch();
 
     let validatorRan = false;
+    let initPassed = false;
 
     // for string
     const paramsString = await wrappedFetch(serverOneUrl + "/user-agent", {
-      validator(response) {
+      validator(response, init) {
         assertStrictEquals(response.status, 200);
         validatorRan = true;
+        initPassed = init.method === "delete";
       },
+      body: {
+        "baz": "zab",
+      },
+      method: "delete",
     }).then((r) => r.text());
 
     assertStrictEquals(
       validatorRan,
+      true,
+    );
+    assertStrictEquals(
+      initPassed,
       true,
     );
   } finally {
