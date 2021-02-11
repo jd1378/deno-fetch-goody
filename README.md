@@ -9,7 +9,7 @@ Also adds `Accept` header with value `application/json, text/plain, */*` if not 
 you can import `wrapFetch` from `mod.ts` file.
 
 ```js
-export { wrapFetch } from 'https://deno.land/x/fetch_goody@v2.1.0/mod.ts';
+export { wrapFetch } from 'https://deno.land/x/fetch_goody@v3.0.0/mod.ts';
 ```
 
 ### wrapFetch
@@ -29,12 +29,14 @@ const wrappedfetch = wrapFetch({ fetchFn: yourFetch });
 #### using the new wrappedfetch
 
 ```js
-
+// v3.0.0 : for sending a multipart/form-data body now you should use `formData`.
 const resp1 = await wrappedfetch("url",{
   form: {
     'foo': 'bar'
   }
-}); // sets method to POST by default and converts object to FormData.
+}); // sets method to POST by default and converts object to application/x-www-form-urlencoded.
+
+
 
 // or 
 

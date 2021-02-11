@@ -1,27 +1,32 @@
 
 # Changelog
 
-# v2.1.0
+## v3.0.0
+
+- BREAKING CHANGE: Changed `form` option to `formData` and used `form` option as a `application/x-www-form-urlencoded` value instead of `multipart/form-data`.
+this means anything meant to be sent as a `multipart/form-data` now should be passed as `formData` option.
+
+## v2.1.0
 
 - Allow array of strings as value in form option.
 
-# v2.0.0
+## v2.0.0
 
 - BREAKING CHANGE: rename `fetchFn` to `fetch` in WrapFetchOptions
 - create WrapFetchOptions type
 - add a validator option to WrapFetchOptions
 - the validator that is passed to WrapFetchOptions will run before the validator of ExtendedRequestInit
   
-# v1.5.0
+## v1.5.0
 
 - pass init to validator
   
-# v1.4.0
+## v1.4.0
 
 - add validator option
 - update docs a bit
 
-# v1.3.3
+## v1.3.3
 
 - fix bug introduced in last version and add test
 
