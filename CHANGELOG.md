@@ -1,6 +1,10 @@
 
 # Changelog
 
+## v3.0.1
+
+- fix `form` keys not getting url encoded.
+
 ## v3.0.0
 
 - BREAKING CHANGE: Changed `form` option to `formData` and used `form` option as a `application/x-www-form-urlencoded` value instead of `multipart/form-data`.
