@@ -124,12 +124,42 @@ export function wrapFetch(options?: WrapFetchOptions) {
     }
 
     if ("form" in interceptedInit && interceptedInit.form) {
-      interceptedInit.body = new FormData();
+      interceptedInit.body = "";
       for (const key of Object.keys(interceptedInit.form)) {
         if (typeof interceptedInit.form[key] === "string") {
-          interceptedInit.body.append(key, interceptedInit.form[key] as string);
+          interceptedInit.body += `${key}=${
+            encodeURIComponent(interceptedInit.form[key] as string)
+          }&`;
         } else {
           for (const str of interceptedInit.form[key]) {
+            interceptedInit.body += `${key}[]=${
+              encodeURIComponent(str as string)
+            }&`;
+          }
+        }
+      }
+      // remove ending &
+      if (interceptedInit.body) {
+        interceptedInit.body = interceptedInit.body.substring(
+          0,
+          interceptedInit.body.length - 1,
+        );
+      }
+      if (!interceptedInit.method) {
+        interceptedInit.method = "POST";
+      }
+    }
+
+    if ("formData" in interceptedInit && interceptedInit.formData) {
+      interceptedInit.body = new FormData();
+      for (const key of Object.keys(interceptedInit.formData)) {
+        if (typeof interceptedInit.formData[key] === "string") {
+          interceptedInit.body.append(
+            key,
+            interceptedInit.formData[key] as string,
+          );
+        } else {
+          for (const str of interceptedInit.formData[key]) {
             interceptedInit.body.append(key, str);
           }
         }

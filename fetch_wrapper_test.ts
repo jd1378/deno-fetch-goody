@@ -48,13 +48,15 @@ async function handleServer1() {
       }
       bodyContent = new URLSearchParams(data)
         .toString();
+    } else if (request.url.startsWith("/formurldata")) {
+      // skips setting anything and it defaults to request.body
     } else if (request.url.startsWith("/qsparams")) {
       bodyContent = new URL("http://foo.bar" + request.url).searchParams
         .toString();
     } else {
       bodyContent = request.headers.get(request.url.substr(1)) || "";
     }
-    await request.respond({ status: 200, body: bodyContent });
+    await request.respond({ status: 200, body: bodyContent || request.body });
   }
 }
 
@@ -199,14 +201,14 @@ Deno.test("WrappedFetch sends corresponding content-type header when body is def
   }
 });
 
-Deno.test("WrappedFetch sends FormData when form is defined", async () => {
+Deno.test("WrappedFetch sends FormData when formData is defined", async () => {
   try {
     handlers.push(handleServer1());
 
     const wrappedFetch = wrapFetch();
     const headerString = await wrappedFetch(serverOneUrl + "/content-type", {
       method: "POST",
-      form: {
+      formData: {
         "test": "sa",
       },
     }).then((
@@ -220,7 +222,7 @@ Deno.test("WrappedFetch sends FormData when form is defined", async () => {
 
     const response = await wrappedFetch(serverOneUrl + "/formdata", {
       method: "POST",
-      form: {
+      formData: {
         "test": "sa",
       },
     }).then((
@@ -236,13 +238,75 @@ Deno.test("WrappedFetch sends FormData when form is defined", async () => {
   }
 });
 
+Deno.test("WrappedFetch sends form url encoded body when form is defined", async () => {
+  try {
+    handlers.push(handleServer1());
+
+    const wrappedFetch = wrapFetch();
+    const headerString = await wrappedFetch(serverOneUrl + "/content-type", {
+      method: "POST",
+      form: {
+        "test": "sa",
+      },
+    }).then((
+      r,
+    ) => r.text());
+
+    assert(
+      headerString.startsWith("application/x-www-form-urlencoded"),
+      "form header is not sent",
+    );
+
+    const response = await wrappedFetch(serverOneUrl + "/formurldata", {
+      method: "POST",
+      form: {
+        "test": "sa",
+        "arr": ["1", "2"],
+      },
+    }).then((
+      r,
+    ) => r.text());
+
+    assertStrictEquals(
+      decodeURIComponent(response),
+      "test=sa&arr[]=1&arr[]=2",
+    );
+  } finally {
+    await closeServers();
+  }
+});
+
+// Deno.test("WrappedFetch formData option supports array", async () => {
+//   try {
+//     handlers.push(handleServer1());
+
+//     const wrappedFetch = wrapFetch();
+
+//     const response = await wrappedFetch(serverOneUrl + "/formdata", {
+//       method: "POST",
+//       formData: {
+//         "foo": ["bar", "baz"],
+//       },
+//     }).then((
+//       r,
+//     ) => r.text());
+
+//     assertStrictEquals(
+//       response,
+//       "foo=bar&foo=baz", // test fails, but data is sent: https://github.com/denoland/deno_std/issues/716
+//     );
+//   } finally {
+//     await closeServers();
+//   }
+// });
+
 Deno.test("WrappedFetch form option supports array", async () => {
   try {
     handlers.push(handleServer1());
 
     const wrappedFetch = wrapFetch();
 
-    const response = await wrappedFetch(serverOneUrl + "/formdata", {
+    const response = await wrappedFetch(serverOneUrl + "/formurldata", {
       method: "POST",
       form: {
         "foo": ["bar", "baz"],
@@ -252,8 +316,8 @@ Deno.test("WrappedFetch form option supports array", async () => {
     ) => r.text());
 
     assertStrictEquals(
-      response,
-      "foo=bar&foo=baz", // test fails, but data is sent: https://github.com/denoland/deno_std/issues/716
+      decodeURIComponent(response),
+      "foo[]=bar&foo[]=baz",
     );
   } finally {
     await closeServers();
