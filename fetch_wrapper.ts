@@ -127,12 +127,12 @@ export function wrapFetch(options?: WrapFetchOptions) {
       interceptedInit.body = "";
       for (const key of Object.keys(interceptedInit.form)) {
         if (typeof interceptedInit.form[key] === "string") {
-          interceptedInit.body += `${key}=${
+          interceptedInit.body += `${encodeURIComponent(key)}=${
             encodeURIComponent(interceptedInit.form[key] as string)
           }&`;
         } else {
           for (const str of interceptedInit.form[key]) {
-            interceptedInit.body += `${key}[]=${
+            interceptedInit.body += `${encodeURIComponent(key)}[]=${
               encodeURIComponent(str as string)
             }&`;
           }
