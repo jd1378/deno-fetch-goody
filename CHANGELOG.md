@@ -1,6 +1,10 @@
 
 # Changelog
 
+## v4.0.0
+
+- due to adding `timeout` option and the way it works, it may cause issues. so I release this as breaking change.
+
 ## v3.0.1
 
 - fix `form` keys not getting url encoded.
