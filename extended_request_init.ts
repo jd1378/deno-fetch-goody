@@ -11,6 +11,8 @@ interface RequestInitDiff {
    *  can be used for validating response and throwing errors */
   validator?:
     ((response: Response, init: ExtendedRequestInit) => void | Promise<void>);
+  /** time in milliseconds which after the request should be cancelled and rejected */
+  timeout?: number;
 }
 
 export type ExtendedRequestInit =

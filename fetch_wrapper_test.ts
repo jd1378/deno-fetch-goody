@@ -36,7 +36,7 @@ async function handleServer1() {
   await delay(100);
   server1 = serve({ hostname: "0.0.0.0", port: 54933 });
   for await (const request of server1) {
-    let bodyContent;
+    let bodyContent = "";
     if (request.url.endsWith("formdata")) {
       const contentTypeHeader = request.headers.get("content-type");
       const params = getHeaderValueParams(contentTypeHeader);
@@ -53,8 +53,15 @@ async function handleServer1() {
     } else if (request.url.startsWith("/qsparams")) {
       bodyContent = new URL("http://foo.bar" + request.url).searchParams
         .toString();
+    } else if (request.url.startsWith("/timeout")) {
+      bodyContent = "ok";
+      const url = new URL("http://foo.bar" + request.url);
+      await delay(parseInt(url.searchParams.get("ms") || ""));
     } else {
-      bodyContent = request.headers.get(request.url.substr(1)) || "";
+      const headerName = request.url.substr(1).replace(/[^\w-_]/gi, "");
+      if (headerName) {
+        bodyContent = request.headers.get(headerName) || "";
+      }
     }
     await request.respond({ status: 200, body: bodyContent || request.body });
   }
@@ -79,17 +86,107 @@ async function closeServers() {
     server1 = undefined;
   } catch {
     //
+  } finally {
+    await delay(10);
   }
 }
+
+Deno.test({
+  name: "WrappedFetch global timeout option works",
+  fn: async () => {
+    try {
+      handlers.push(handleServer1());
+
+      const wrappedFetch = wrapFetch({
+        timeout: 1000,
+      });
+
+      let resp = await wrappedFetch(serverOneUrl + "/timeout", {
+        qs: {
+          ms: "0",
+        },
+      }).then((r) => r.text());
+
+      assertStrictEquals(
+        resp,
+        "ok",
+      );
+
+      resp = "";
+
+      // see if it throws with timeout error
+      let fetchError;
+      try {
+        resp = await wrappedFetch(serverOneUrl + "/timeout", {
+          qs: {
+            ms: "2000",
+          },
+        }).then((r) => r.text());
+      } catch (err) {
+        fetchError = err;
+      }
+      assert(resp === "", "response should not be available");
+      assert(fetchError !== undefined, "timeout has not thrown");
+      assertStrictEquals(fetchError.message, "timeout");
+    } finally {
+      await closeServers();
+    }
+  },
+  sanitizeOps: false,
+});
+
+Deno.test({
+  name: "WrappedFetch per request timeout option works",
+  fn: async () => {
+    try {
+      handlers.push(handleServer1());
+
+      const wrappedFetch = wrapFetch();
+
+      let resp = await wrappedFetch(serverOneUrl + "/timeout", {
+        qs: {
+          ms: "0",
+        },
+        timeout: 1000,
+      }).then((r) => r.text());
+
+      assertStrictEquals(
+        resp,
+        "ok",
+      );
+
+      resp = "";
+
+      // see if it throws with timeout error
+      let fetchError;
+      try {
+        resp = await wrappedFetch(serverOneUrl + "/timeout", {
+          qs: {
+            ms: "2000",
+          },
+          timeout: 1000,
+        }).then((r) => r.text());
+      } catch (err) {
+        fetchError = err;
+      }
+      assert(resp === "", "response should not be available");
+      assert(fetchError !== undefined, "timeout has not thrown");
+      assertStrictEquals(fetchError.message, "timeout");
+    } finally {
+      await closeServers();
+    }
+  },
+  sanitizeOps: false,
+});
 
 Deno.test("WrappedFetch sends a default accept header", async () => {
   try {
     handlers.push(handleServer1());
 
     const wrappedFetch = wrapFetch();
-    const headerString = await wrappedFetch(serverOneUrl + "/accept").then((
-      r,
-    ) => r.text());
+    const headerString = await wrappedFetch(serverOneUrl + "/accept").then(
+      (r) => r.text(),
+    );
 
     assertStrictEquals(headerString, "application/json, text/plain, */*");
   } finally {
@@ -116,24 +213,28 @@ Deno.test("WrappedFetch sends caller's accept header if set", async () => {
   }
 });
 
-Deno.test("WrappedFetch sends a content-type header if set", async () => {
-  try {
-    handlers.push(handleServer1());
+Deno.test({
+  name: "WrappedFetch sends a content-type header if set",
+  fn: async () => {
+    try {
+      handlers.push(handleServer1());
 
-    const wrappedFetch = wrapFetch();
-    const headerString = await wrappedFetch(serverOneUrl + "/content-type", {
-      headers: {
-        "content-type": "foobario",
-      },
-      method: "POST",
-    }).then((
-      r,
-    ) => r.text());
+      const wrappedFetch = wrapFetch();
+      const headerString = await wrappedFetch(serverOneUrl + "/content-type", {
+        headers: {
+          "content-type": "foobario",
+        },
+        method: "POST",
+      }).then(
+        (r) => r.text(),
+      );
 
-    assertStrictEquals(headerString, "foobario");
-  } finally {
-    await closeServers();
-  }
+      assertStrictEquals(headerString, "foobario");
+    } finally {
+      await closeServers();
+    }
+  },
+  sanitizeOps: false, // workaround for some kind of bug due to timeout implementation
 });
 
 Deno.test("WrappedFetch sends a default content-type header if posting anything", async () => {

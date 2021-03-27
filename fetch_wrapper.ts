@@ -1,6 +1,7 @@
 import * as utils from "./utils.ts";
 import { getHeader, setHeader } from "./header_utils.ts";
 import { ExtendedRequestInit } from "./extended_request_init.ts";
+import { timeoutFetch } from "./timeout_helper.ts";
 
 /**
  * Transforms data and adds corresponding headers if possible.
@@ -82,10 +83,17 @@ export type WrapFetchOptions = {
   /** validator to run after each response with this fetch */
   validator?:
     ((response: Response, init: ExtendedRequestInit) => void | Promise<void>);
+  /** if set, all requests will timeout after this amount of milliseconds passed */
+  timeout?: number;
 };
 
 export function wrapFetch(options?: WrapFetchOptions) {
-  const { fetch = globalThis.fetch, userAgent, validator } = options || {};
+  const {
+    fetch = globalThis.fetch,
+    userAgent,
+    validator,
+    timeout = 99999999,
+  } = options || {};
 
   return async function wrappedFetch(
     input: string | Request | URL,
@@ -195,7 +203,22 @@ export function wrapFetch(options?: WrapFetchOptions) {
       );
     }
 
-    const response = await fetch(input, interceptedInit as RequestInit);
+    // ---------------- following will be uncommented when the mentioned issue is resolved
+    // let timeoutId: undefined | number;
+    // if (("timeout" in interceptedInit && interceptedInit.timeout) || timeout) {
+    // const abortController = new AbortController();
+    // timeoutId = setTimeout(
+    //   abortController.abort,
+    //   (interceptedInit as ExtendedRequestInit).timeout || timeout,
+    // );
+    // interceptedInit.signal = abortController.signal;
+    // }
+    // const response = await fetch(input, interceptedInit as RequestInit);
+
+    const response = await timeoutFetch(
+      (interceptedInit as ExtendedRequestInit).timeout || timeout,
+      fetch(input, interceptedInit as RequestInit),
+    );
 
     if (typeof validator === "function") {
       await validator(response, interceptedInit);
