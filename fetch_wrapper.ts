@@ -101,7 +101,7 @@ export function wrapFetch(options?: WrapFetchOptions) {
   ) {
     // let fetch handle the error
     if (!input) {
-      return await fetch(input);
+      return fetch(input);
     }
 
     const interceptedInit = init || {};
