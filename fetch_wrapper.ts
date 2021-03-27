@@ -84,11 +84,6 @@ export type WrapFetchOptions = {
     ((response: Response, init: ExtendedRequestInit) => void | Promise<void>);
 };
 
-/**
- * @param options - Wrap options
- * @param options.fetchFn - If no `fetchFn` is provided, will default to global fetch.
- *  This allows wrapping your fetch function multiple times.
- */
 export function wrapFetch(options?: WrapFetchOptions) {
   const { fetch = globalThis.fetch, userAgent, validator } = options || {};
 
