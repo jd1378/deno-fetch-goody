@@ -6,15 +6,19 @@ This library offers a fetch wrapper that can:
 - directly use objects for `body` as json (see below)
 - send `form`, `formData`, `qs` (query string) easily from objects
 - set a validator globally or per request, to reject when validator throws.
-- accept a timeout option and reject on timeout (currently how it works leaks resources due to [AbortController](https://github.com/denoland/deno/issues/7019) not being supported yet)
+- accept a timeout option and abort when timeout is reached
 - add `Accept` header with value `application/json, text/plain, */*` if not already set by you
+
+Version v5.0.0+ is the recommended version now (abort controller is used now). please don't use v4 of fetch goody anymore.
+
+**Deno v1.11+ is required.**
 
 ## usage
 
 you can import `wrapFetch` from `mod.ts` file.
 
 ```js
-export { wrapFetch } from 'https://deno.land/x/fetch_goody@v4.0.0/mod.ts';
+export { wrapFetch } from 'https://deno.land/x/fetch_goody@v5.0.0/mod.ts';
 ```
 
 ### wrapFetch

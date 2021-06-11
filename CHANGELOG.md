@@ -1,6 +1,10 @@
 
 # Changelog
 
+## v5.0.0
+
+- fix timeout functionality as the abort signal is now supported as of deno v1.11
+
 ## v4.0.0
 
 - due to adding `timeout` option and the way it works, it may cause issues. so I release this as breaking change.

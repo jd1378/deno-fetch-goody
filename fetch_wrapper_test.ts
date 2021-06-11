@@ -1,11 +1,11 @@
 import {
   assert,
   assertStrictEquals,
-} from "https://deno.land/std@0.86.0/testing/asserts.ts";
-import { serve, Server } from "https://deno.land/std@0.86.0/http/server.ts";
+} from "https://deno.land/std@0.98.0/testing/asserts.ts";
+import { serve, Server } from "https://deno.land/std@0.98.0/http/server.ts";
 import { wrapFetch } from "./mod.ts";
-import { delay } from "https://deno.land/std@0.86.0/async/delay.ts";
-import { MultipartReader } from "https://deno.land/std@0.86.0/mime/multipart.ts";
+import { delay } from "https://deno.land/std@0.98.0/async/delay.ts";
+import { MultipartReader } from "https://deno.land/std@0.98.0/mime/multipart.ts";
 
 let server1: Server | undefined;
 const serverOneUrl = "http://localhost:54933";
@@ -91,14 +91,14 @@ async function closeServers() {
   }
 }
 
-Deno.test({
-  name: "WrappedFetch global timeout option works",
-  fn: async () => {
+Deno.test(
+  "WrappedFetch global timeout option works",
+  async () => {
     try {
       handlers.push(handleServer1());
 
       const wrappedFetch = wrapFetch({
-        timeout: 1000,
+        timeout: 500,
       });
 
       let resp = await wrappedFetch(serverOneUrl + "/timeout", {
@@ -127,56 +127,57 @@ Deno.test({
       }
       assert(resp === "", "response should not be available");
       assert(fetchError !== undefined, "timeout has not thrown");
-      assertStrictEquals(fetchError.message, "timeout");
+      assertStrictEquals(fetchError.message, "Ongoing fetch was aborted.");
+
+      // dummy fetch for letting the async ops finish
+      await (await fetch(serverOneUrl + "/accept")).text();
     } finally {
       await closeServers();
     }
   },
-  sanitizeOps: false,
-});
+);
 
-Deno.test({
-  name: "WrappedFetch per request timeout option works",
-  fn: async () => {
+Deno.test("WrappedFetch per request timeout option works", async () => {
+  try {
+    handlers.push(handleServer1());
+
+    const wrappedFetch = wrapFetch();
+
+    let resp = await wrappedFetch(serverOneUrl + "/timeout", {
+      qs: {
+        ms: "0",
+      },
+      timeout: 500,
+    }).then((r) => r.text());
+
+    assertStrictEquals(
+      resp,
+      "ok",
+    );
+
+    resp = "";
+
+    // see if it throws with timeout error
+    let fetchError;
     try {
-      handlers.push(handleServer1());
-
-      const wrappedFetch = wrapFetch();
-
-      let resp = await wrappedFetch(serverOneUrl + "/timeout", {
+      resp = await wrappedFetch(serverOneUrl + "/timeout", {
         qs: {
-          ms: "0",
+          ms: "2000",
         },
-        timeout: 1000,
+        timeout: 500,
       }).then((r) => r.text());
-
-      assertStrictEquals(
-        resp,
-        "ok",
-      );
-
-      resp = "";
-
-      // see if it throws with timeout error
-      let fetchError;
-      try {
-        resp = await wrappedFetch(serverOneUrl + "/timeout", {
-          qs: {
-            ms: "2000",
-          },
-          timeout: 1000,
-        }).then((r) => r.text());
-      } catch (err) {
-        fetchError = err;
-      }
-      assert(resp === "", "response should not be available");
-      assert(fetchError !== undefined, "timeout has not thrown");
-      assertStrictEquals(fetchError.message, "timeout");
-    } finally {
-      await closeServers();
+    } catch (err) {
+      fetchError = err;
     }
-  },
-  sanitizeOps: false,
+    assert(resp === "", "response should not be available");
+    assert(fetchError !== undefined, "timeout has not thrown");
+    assertStrictEquals(fetchError.message, "Ongoing fetch was aborted.");
+
+    // dummy fetch for letting the async ops finish
+    await (await fetch(serverOneUrl + "/accept")).text();
+  } finally {
+    await closeServers();
+  }
 });
 
 Deno.test("WrappedFetch sends a default accept header", async () => {
