@@ -206,7 +206,7 @@ export function wrapFetch(options?: WrapFetchOptions) {
     if (("timeout" in interceptedInit && interceptedInit.timeout) || timeout) {
       const abortController = new AbortController();
       timeoutId = setTimeout(
-        () => abortController.abort(),
+        () => abortController.abort(new Error("Timeout has been exceeded")),
         (interceptedInit as ExtendedRequestInit).timeout || timeout,
       );
       interceptedInit.signal = abortController.signal;
