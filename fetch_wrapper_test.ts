@@ -370,7 +370,7 @@ Deno.test("interaction with a server", {
 
       assertStrictEquals(
         response,
-        "foo=bar&foo=baz", // test fails, but data is sent: https://github.com/denoland/deno_std/issues/716
+        "foo=bar&foo=baz",
       );
     });
 
@@ -557,6 +557,18 @@ Deno.test("interaction with a server", {
         secondInitPassed,
         true,
       );
+    });
+
+    await t.step("WrappedFetch uses the given baseURL", async () => {
+      const wrappedFetch = wrapFetch({
+        baseURL: serverOneUrl,
+      });
+
+      const headerString = await wrappedFetch("/accept").then((
+        r,
+      ) => r.text());
+
+      assertStrictEquals(headerString, "application/json, text/plain, */*");
     });
   } finally {
     server1.close();

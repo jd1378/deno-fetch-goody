@@ -75,6 +75,8 @@ export type WrapFetchOptions = {
   timeout?: number;
   /** if set, will be used as default headers. new added headers will be added on top of these. */
   headers?: Headers;
+  /** if set, will be prepended to the target url using URL api. */
+  baseURL?: string | URL;
 };
 
 export function wrapFetch(options?: WrapFetchOptions) {
@@ -84,8 +86,8 @@ export function wrapFetch(options?: WrapFetchOptions) {
     validator,
     timeout = 99999999,
     headers,
+    baseURL,
   } = options || {};
-
   return async function wrappedFetch(
     input: string | Request | URL,
     init?: ExtendedRequestInit | RequestInit | undefined,
@@ -211,7 +213,18 @@ export function wrapFetch(options?: WrapFetchOptions) {
       interceptedInit.signal = abortController.signal;
     }
 
-    const response = await fetch(input, interceptedInit as RequestInit);
+    let newInput;
+    if (input instanceof Request) {
+      newInput = input.url;
+    } else {
+      newInput = input.toString();
+    }
+
+    if (baseURL) {
+      newInput = new URL(newInput, baseURL);
+    }
+
+    const response = await fetch(newInput, interceptedInit as RequestInit);
     clearTimeout(timeoutId);
 
     if (typeof validator === "function") {

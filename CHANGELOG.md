@@ -1,6 +1,12 @@
 
 # Changelog
 
+## v5.2.0
+
+- fix a small issue when no header was given
+- add support for baseURL option
+- export ExtendedRequest type for validator typing
+
 ## v5.1.0
 
 - add support for initial headers when creating wrapper

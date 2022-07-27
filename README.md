@@ -9,6 +9,7 @@ This library offers a fetch wrapper that can:
 - accept a timeout option and abort when timeout is reached
 - add `Accept` header with value `application/json, text/plain, */*` if not already set by you
 - set global headers when creating the wrapper
+- set a `baseURL` when creating the wrapper
 
 Version v5.0.0+ is the recommended version now (abort controller is used now). please don't use v4 of fetch goody anymore.
 
@@ -19,7 +20,7 @@ Version v5.0.0+ is the recommended version now (abort controller is used now). p
 you can import `wrapFetch` from `mod.ts` file.
 
 ```js
-export { wrapFetch } from 'https://deno.land/x/fetch_goody@v5.0.0/mod.ts';
+export { wrapFetch } from 'https://deno.land/x/fetch_goody@v5.2.0/mod.ts';
 ```
 
 ### wrapFetch
@@ -70,7 +71,7 @@ const resp3 = await wrappedfetch("url",{
 // adding a response validator where you can throw errors
 
 const resp4 = await wrappedfetch("url",{
-  validator(response: Response, init: ExtendedRequestInit) {
+  validator(response: Response, init: ExtendedRequest) {
     if (response.status > 200) {
       throw new Error('yada');
     }
