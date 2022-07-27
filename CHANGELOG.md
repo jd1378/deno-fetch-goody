@@ -1,6 +1,12 @@
 
 # Changelog
 
+## v5.1.0
+
+- add support for initial headers when creating wrapper
+- remove unnecessary header utils
+- improve types for validator for easier header usage
+
 ## v5.0.0
 
 - fix timeout functionality as the abort signal is now supported as of deno v1.11

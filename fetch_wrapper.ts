@@ -1,6 +1,9 @@
 import * as utils from "./utils.ts";
-import { getHeader, setHeader } from "./header_utils.ts";
-import { ExtendedRequestInit, Validator } from "./extended_request_init.ts";
+import {
+  ExtendedRequest,
+  ExtendedRequestInit,
+  Validator,
+} from "./extended_request_init.ts";
 
 /**
  * Transforms data and adds corresponding headers if possible.
@@ -17,11 +20,7 @@ function transformData(
     | ReadableStream<Uint8Array>
     | null
     | undefined,
-  headers:
-    | Headers
-    | string[][]
-    | Record<string, string>
-    | undefined,
+  headers: Headers,
   init?: RequestInit | ExtendedRequestInit,
 ):
   | string
@@ -47,30 +46,21 @@ function transformData(
     return data.buffer;
   }
   if (utils.isURLSearchParams(data)) {
-    setHeader(
-      headers,
+    headers.set(
       "Content-Type",
       "application/x-www-form-urlencoded;charset=utf-8",
     );
     return data.toString();
   }
   if (utils.isObject(data)) {
-    setHeader(
-      headers,
-      "Content-Type",
-      "application/json;charset=utf-8",
-    );
+    headers.set("Content-Type", "application/json;charset=utf-8");
     if (init && !init.method) {
       init.method = "POST";
     }
     return JSON.stringify(data);
   }
   // the default header if type undefined
-  setHeader(
-    headers,
-    "Content-Type",
-    "application/x-www-form-urlencoded",
-  );
+  headers.set("Content-Type", "application/x-www-form-urlencoded");
   return data;
 }
 
@@ -83,6 +73,8 @@ export type WrapFetchOptions = {
   validator?: Validator;
   /** if set, all requests will timeout after this amount of milliseconds passed */
   timeout?: number;
+  /** if set, will be used as default headers. new added headers will be added on top of these. */
+  headers?: Headers;
 };
 
 export function wrapFetch(options?: WrapFetchOptions) {
@@ -91,6 +83,7 @@ export function wrapFetch(options?: WrapFetchOptions) {
     userAgent,
     validator,
     timeout = 99999999,
+    headers,
   } = options || {};
 
   return async function wrappedFetch(
@@ -103,25 +96,32 @@ export function wrapFetch(options?: WrapFetchOptions) {
     }
 
     const interceptedInit = init || {};
-    if (!interceptedInit.headers) {
-      interceptedInit.headers = new Headers();
+
+    if (!(interceptedInit.headers instanceof Headers)) {
+      interceptedInit.headers = new Headers(interceptedInit.headers);
+    }
+
+    {
+      const baseHeaders = new Headers(headers);
+
+      for (const header of interceptedInit.headers) {
+        baseHeaders.set(header[0], header[1]);
+      }
+
+      interceptedInit.headers = baseHeaders;
     }
 
     // setup a default accept
-    if (!getHeader(interceptedInit.headers, "Accept")) {
-      setHeader(
-        interceptedInit.headers,
+    if (!interceptedInit.headers.get("Accept")) {
+      interceptedInit.headers.set(
         "Accept",
         "application/json, text/plain, */*",
       );
     }
+
     // setup user agent if set
     if (userAgent) {
-      setHeader(
-        interceptedInit.headers,
-        "User-Agent",
-        userAgent,
-      );
+      interceptedInit.headers.set("User-Agent", userAgent);
     }
 
     if ("form" in interceptedInit && interceptedInit.form) {
@@ -215,14 +215,17 @@ export function wrapFetch(options?: WrapFetchOptions) {
     clearTimeout(timeoutId);
 
     if (typeof validator === "function") {
-      await validator(response, interceptedInit);
+      await validator(response, interceptedInit as ExtendedRequest);
     }
 
     if (
       "validator" in interceptedInit &&
       typeof interceptedInit.validator === "function"
     ) {
-      await interceptedInit.validator(response, interceptedInit);
+      await interceptedInit.validator(
+        response,
+        interceptedInit as ExtendedRequest,
+      );
     }
 
     return response;

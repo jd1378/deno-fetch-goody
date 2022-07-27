@@ -8,6 +8,7 @@ This library offers a fetch wrapper that can:
 - set a validator globally or per request, to reject when validator throws.
 - accept a timeout option and abort when timeout is reached
 - add `Accept` header with value `application/json, text/plain, */*` if not already set by you
+- set global headers when creating the wrapper
 
 Version v5.0.0+ is the recommended version now (abort controller is used now). please don't use v4 of fetch goody anymore.
 

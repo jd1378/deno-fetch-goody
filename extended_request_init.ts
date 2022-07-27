@@ -16,9 +16,14 @@ interface RequestInitDiff {
 
 export type Validator = (
   response: Response,
-  init: ExtendedRequestInit,
+  init: ExtendedRequest,
 ) => void | Promise<void>;
 
 export type ExtendedRequestInit =
   & RequestInitDiff
   & Omit<RequestInit, keyof RequestInitDiff>;
+
+export type ExtendedRequest =
+  & RequestInitDiff
+  & Omit<RequestInit, keyof RequestInitDiff | "headers">
+  & { headers: Headers };

@@ -240,6 +240,48 @@ Deno.test("interaction with a server", {
     );
 
     await t.step(
+      "WrappedFetch sends the given headers when creating wrapper",
+      async () => {
+        const headers = new Headers();
+        headers.set("test", "foo");
+        headers.set("bar", "baz");
+        const wrappedFetch = wrapFetch({
+          headers,
+        });
+
+        let headerString = await wrappedFetch(serverOneUrl + "/test").then(
+          (r) => r.text(),
+        );
+        assertStrictEquals(headerString, "foo");
+
+        headerString = await wrappedFetch(serverOneUrl + "/bar").then(
+          (r) => r.text(),
+        );
+        assertStrictEquals(headerString, "baz");
+      },
+    );
+
+    await t.step(
+      "WrappedFetch doesnt override the user's newly given headers",
+      async () => {
+        const headers = new Headers();
+        headers.set("test", "foo");
+        const wrappedFetch = wrapFetch({
+          headers,
+        });
+
+        const headerString = await wrappedFetch(serverOneUrl + "/test", {
+          headers: {
+            "test": "baz",
+          },
+        }).then(
+          (r) => r.text(),
+        );
+        assertStrictEquals(headerString, "baz");
+      },
+    );
+
+    await t.step(
       "WrappedFetch sends FormData when formData is defined",
       async () => {
         const wrappedFetch = wrapFetch();
