@@ -9,11 +9,15 @@ interface RequestInitDiff {
   body?: Record<string, unknown> | BodyInit | null;
   /** a function that will be called before returning response.
    *  can be used for validating response and throwing errors */
-  validator?:
-    ((response: Response, init: ExtendedRequestInit) => void | Promise<void>);
+  validator?: Validator;
   /** time in milliseconds which after the request should be cancelled and rejected */
   timeout?: number;
 }
+
+export type Validator = (
+  response: Response,
+  init: ExtendedRequestInit,
+) => void | Promise<void>;
 
 export type ExtendedRequestInit =
   & RequestInitDiff

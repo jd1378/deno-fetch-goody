@@ -1,6 +1,6 @@
 import * as utils from "./utils.ts";
 import { getHeader, setHeader } from "./header_utils.ts";
-import { ExtendedRequestInit } from "./extended_request_init.ts";
+import { ExtendedRequestInit, Validator } from "./extended_request_init.ts";
 
 /**
  * Transforms data and adds corresponding headers if possible.
@@ -80,8 +80,7 @@ export type WrapFetchOptions = {
   /** user agent header string */
   userAgent?: string;
   /** validator to run after each response with this fetch */
-  validator?:
-    ((response: Response, init: ExtendedRequestInit) => void | Promise<void>);
+  validator?: Validator;
   /** if set, all requests will timeout after this amount of milliseconds passed */
   timeout?: number;
 };
