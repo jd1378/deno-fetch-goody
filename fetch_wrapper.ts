@@ -98,7 +98,7 @@ export function wrapFetch(options?: WrapFetchOptions) {
     const interceptedInit = init || {};
 
     if (!(interceptedInit.headers instanceof Headers)) {
-      interceptedInit.headers = new Headers(interceptedInit.headers);
+      interceptedInit.headers = new Headers(interceptedInit.headers || {});
     }
 
     {
