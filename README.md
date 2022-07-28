@@ -35,7 +35,8 @@ Or
 const wrappedfetch = wrapFetch({ fetch: yourFetch });
 ```
 
-You can also add global interceptors: 
+You can also add global interceptors:
+
 ```ts
 const wrappedfetch = wrapFetch({ 
     interceptors: {
