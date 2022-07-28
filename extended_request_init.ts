@@ -7,17 +7,23 @@ interface RequestInitDiff {
   formData?: Record<string, string | string[]>;
   /** if an object is passed, it will be sent as serialized json and header is set accordingly. */
   body?: Record<string, unknown> | BodyInit | null;
-  /** a function that will be called before returning response.
-   *  can be used for validating response and throwing errors */
-  validator?: Validator;
+  /** interceptors can be used for validating request and response and throwing errors */
+  interceptors?: Interceptors;
   /** time in milliseconds which after the request should be cancelled and rejected */
   timeout?: number;
 }
 
-export type Validator = (
-  response: Response,
-  init: ExtendedRequest,
-) => void | Promise<void>;
+export type Interceptors = {
+  /** function that is called just before a request is sent*/
+  request?: (
+    init: ExtendedRequest,
+  ) => void | Promise<void>;
+  /** function that is called just before a response is returned from the fetch*/
+  response?: (
+    init: ExtendedRequest,
+    response: Response,
+  ) => void | Promise<void>;
+};
 
 export type ExtendedRequestInit =
   & RequestInitDiff

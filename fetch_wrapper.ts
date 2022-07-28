@@ -2,7 +2,7 @@ import * as utils from "./utils.ts";
 import {
   ExtendedRequest,
   ExtendedRequestInit,
-  Validator,
+  Interceptors,
 } from "./extended_request_init.ts";
 
 /**
@@ -69,25 +69,26 @@ export type WrapFetchOptions = {
   fetch?: typeof fetch;
   /** user agent header string */
   userAgent?: string;
-  /** validator to run after each response with this fetch */
-  validator?: Validator;
   /** if set, all requests will timeout after this amount of milliseconds passed */
   timeout?: number;
   /** if set, will be used as default headers. new added headers will be added on top of these. */
   headers?: Headers;
   /** if set, will be prepended to the target url using URL api. */
   baseURL?: string | URL;
+  /** interceptors can be used for validating request and response and throwing errors */
+  interceptors?: Interceptors;
 };
 
 export function wrapFetch(options?: WrapFetchOptions) {
   const {
     fetch = globalThis.fetch,
     userAgent,
-    validator,
+    interceptors,
     timeout = 99999999,
     headers,
     baseURL,
   } = options || {};
+
   return async function wrappedFetch(
     input: string | Request | URL,
     init?: ExtendedRequestInit | RequestInit | undefined,
@@ -224,20 +225,33 @@ export function wrapFetch(options?: WrapFetchOptions) {
       newInput = new URL(newInput, baseURL);
     }
 
-    const response = await fetch(newInput, interceptedInit as RequestInit);
-    clearTimeout(timeoutId);
-
-    if (typeof validator === "function") {
-      await validator(response, interceptedInit as ExtendedRequest);
+    if (typeof interceptors?.request === "function") {
+      await interceptors.request(interceptedInit as ExtendedRequest);
     }
 
     if (
-      "validator" in interceptedInit &&
-      typeof interceptedInit.validator === "function"
+      "interceptors" in interceptedInit &&
+      typeof interceptedInit.interceptors?.request === "function"
     ) {
-      await interceptedInit.validator(
-        response,
+      await interceptedInit.interceptors.request(
         interceptedInit as ExtendedRequest,
+      );
+    }
+
+    const response = await fetch(newInput, interceptedInit as RequestInit);
+    clearTimeout(timeoutId);
+
+    if (typeof interceptors?.response === "function") {
+      await interceptors.response(interceptedInit as ExtendedRequest, response);
+    }
+
+    if (
+      "interceptors" in interceptedInit &&
+      typeof interceptedInit.interceptors?.response === "function"
+    ) {
+      await interceptedInit.interceptors.response(
+        interceptedInit as ExtendedRequest,
+        response,
       );
     }
 

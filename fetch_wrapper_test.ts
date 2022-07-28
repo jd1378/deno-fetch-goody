@@ -1,5 +1,6 @@
 import {
   assert,
+  assertEquals,
   assertStrictEquals,
 } from "https://deno.land/std@0.119.0/testing/asserts.ts";
 import { Server } from "https://deno.land/std@0.119.0/http/server.ts";
@@ -450,46 +451,80 @@ Deno.test("interaction with a server", {
       },
     );
 
-    await t.step("WrappedFetch runs init.validator if set", async () => {
-      const wrappedFetch = wrapFetch();
+    await t.step(
+      "WrappedFetch interceptors are called with the proper arguments",
+      async () => {
+        const wrappedFetch = wrapFetch();
 
-      let validatorRan = false;
-      let initPassed = false;
+        let requestInterceptorRan = false;
+        let responseInterceptorRan = false;
 
-      // for string
-      await wrappedFetch(serverOneUrl + "/user-agent", {
-        validator(response, init) {
-          assertStrictEquals(response.status, 200);
-          validatorRan = true;
-          initPassed = init.method === "delete";
-        },
-        body: {
-          "baz": "zab",
-        },
-        method: "delete",
-      }).then((r) => r.text());
+        // for string
+        await wrappedFetch(serverOneUrl + "/user-agent", {
+          interceptors: {
+            request(init) {
+              assertStrictEquals(init.method, "delete");
+              requestInterceptorRan = true;
+            },
+            response(init, response) {
+              assertStrictEquals(response.status, 200);
+              assertStrictEquals(init.method, "delete");
+              responseInterceptorRan = true;
+            },
+          },
+          body: {
+            "baz": "zab",
+          },
+          method: "delete",
+        }).then((r) => r.text());
 
-      assertStrictEquals(
-        validatorRan,
-        true,
-      );
-      assertStrictEquals(
-        initPassed,
-        true,
-      );
-    });
+        assertStrictEquals(requestInterceptorRan, true);
+        assertStrictEquals(responseInterceptorRan, true);
+      },
+    );
 
     await t.step(
-      "WrappedFetch runs WrapperOption.validator if set",
+      "WrappedFetch interceptors are called in the right order",
       async () => {
-        let validatorRan = false;
-        let initPassed = false;
+        const wrappedFetch = wrapFetch();
+
+        const runOrder: string[] = [];
+
+        // for string
+        await wrappedFetch(serverOneUrl + "/user-agent", {
+          interceptors: {
+            request() {
+              runOrder.push("req");
+            },
+            response() {
+              runOrder.push("res");
+            },
+          },
+        }).then((r) => r.text());
+
+        assertEquals(
+          runOrder,
+          ["req", "res"],
+        );
+      },
+    );
+
+    await t.step(
+      "WrappedFetch runs global interceptors first then per fetch interceptors",
+      async () => {
+        const interceptorRunOrder: string[] = [];
 
         const wrappedFetch = wrapFetch({
-          validator(response, init) {
-            assertStrictEquals(response.status, 200);
-            validatorRan = true;
-            initPassed = init.method === "delete";
+          interceptors: {
+            request(init) {
+              interceptorRunOrder.push("glob_req");
+              assertStrictEquals(init.method, "delete");
+            },
+            response(init, response) {
+              assertStrictEquals(response.status, 200);
+              interceptorRunOrder.push("glob_res");
+              assertStrictEquals(init.method, "delete");
+            },
           },
         });
 
@@ -499,65 +534,25 @@ Deno.test("interaction with a server", {
             "baz": "zab",
           },
           method: "delete",
+          interceptors: {
+            request(init) {
+              interceptorRunOrder.push("req");
+              assertStrictEquals(init.method, "delete");
+            },
+            response(init, response) {
+              assertStrictEquals(response.status, 200);
+              interceptorRunOrder.push("res");
+              assertStrictEquals(init.method, "delete");
+            },
+          },
         }).then((r) => r.text());
 
-        assertStrictEquals(
-          validatorRan,
-          true,
-        );
-        assertStrictEquals(
-          initPassed,
-          true,
+        assertEquals(
+          interceptorRunOrder,
+          ["glob_req", "req", "glob_res", "res"],
         );
       },
     );
-
-    await t.step("WrappedFetch runs both validators in order", async () => {
-      let validatorRan = false;
-      let initPassed = false;
-
-      const wrappedFetch = wrapFetch({
-        validator(response, init) {
-          assertStrictEquals(response.status, 200);
-          validatorRan = true;
-          initPassed = init.method === "delete";
-        },
-      });
-
-      let secondValidatorRan = false;
-      let secondInitPassed = false;
-
-      // for string
-      await wrappedFetch(serverOneUrl + "/user-agent", {
-        body: {
-          "baz": "zab",
-        },
-        method: "delete",
-        validator(response, init) {
-          assertStrictEquals(response.status, 200);
-          secondValidatorRan = true;
-          secondInitPassed = init.method === "delete";
-        },
-      }).then((r) => r.text());
-
-      assertStrictEquals(
-        validatorRan,
-        true,
-      );
-      assertStrictEquals(
-        initPassed,
-        true,
-      );
-
-      assertStrictEquals(
-        secondValidatorRan,
-        true,
-      );
-      assertStrictEquals(
-        secondInitPassed,
-        true,
-      );
-    });
 
     await t.step("WrappedFetch uses the given baseURL", async () => {
       const wrappedFetch = wrapFetch({
