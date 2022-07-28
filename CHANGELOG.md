@@ -22,9 +22,7 @@
 
 - fix timeout functionality as the abort signal is now supported as of deno v1.11
 
-
 Version v5.0.0+ is the recommended version now (abort controller is used now). please don't use v4 of fetch goody anymore.
-
 
 ## v4.0.0
 
