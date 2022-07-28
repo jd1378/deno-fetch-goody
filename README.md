@@ -18,7 +18,7 @@ This library offers a fetch wrapper that can:
 you can import `wrapFetch` from `mod.ts` file.
 
 ```ts
-export { wrapFetch } from 'https://deno.land/x/fetch_goody@v6.0.0/mod.ts';
+export { wrapFetch } from 'https://deno.land/x/fetch_goody@v6.1.0/mod.ts';
 ```
 
 ### wrapFetch

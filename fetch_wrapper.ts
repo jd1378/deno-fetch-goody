@@ -114,6 +114,40 @@ export function wrapFetch(options?: WrapFetchOptions) {
       interceptedInit.headers = baseHeaders;
     }
 
+    // Normalize input to URL. when reading the specs (https://fetch.spec.whatwg.org/#request and https://fetch.spec.whatwg.org/#fetch-method),
+    // I didn't see anything mentioned about fetch using anything from an input that is instance of Request except It's URL.
+    // So it is safe to discard the Request object and use It's url only.
+    // Normalizing the url simplifies any feature we want to add later.
+    {
+      if (typeof input !== "string") {
+        if (input instanceof Request) {
+          input = input.url;
+        } else {
+          input = input.toString();
+        }
+      }
+
+      // URL doesn't support relative urls
+      if (input.includes("://")) {
+        input = new URL(input);
+      } else {
+        if (baseURL) {
+          input = new URL(input, baseURL);
+        } else {
+          try {
+            input = new URL(input, location.href);
+          } catch {
+            throw new Error(
+              "Cannot parse the input url. Either provide `--location` parameter to Deno, or use complete url, or use baseURL when wrapping fetch.",
+            );
+          }
+        }
+      }
+    }
+
+    // add url to interceptedInit
+    (interceptedInit as ExtendedRequest).url = input;
+
     // setup a default accept
     if (!interceptedInit.headers.get("Accept")) {
       interceptedInit.headers.set(
@@ -182,16 +216,10 @@ export function wrapFetch(options?: WrapFetchOptions) {
         },
       ) as [string, string][];
       const searchParams = new URLSearchParams(filteredQs);
-      // doesn't support relative urls
-      if (typeof input === "string" && input.includes("://")) {
-        input = new URL(input);
-      }
 
-      if (input instanceof URL) {
-        for (const [spKey, spValue] of searchParams.entries()) {
-          if (spValue !== undefined) {
-            input.searchParams.set(spKey, spValue);
-          }
+      for (const [spKey, spValue] of searchParams.entries()) {
+        if (spValue !== undefined) {
+          input.searchParams.set(spKey, spValue);
         }
       }
     }
@@ -214,17 +242,6 @@ export function wrapFetch(options?: WrapFetchOptions) {
       interceptedInit.signal = abortController.signal;
     }
 
-    let newInput;
-    if (input instanceof Request) {
-      newInput = input.url;
-    } else {
-      newInput = input.toString();
-    }
-
-    if (baseURL) {
-      newInput = new URL(newInput, baseURL);
-    }
-
     if (typeof interceptors?.request === "function") {
       await interceptors.request(interceptedInit as ExtendedRequest);
     }
@@ -238,7 +255,7 @@ export function wrapFetch(options?: WrapFetchOptions) {
       );
     }
 
-    const response = await fetch(newInput, interceptedInit as RequestInit);
+    const response = await fetch(input, interceptedInit as RequestInit);
     clearTimeout(timeoutId);
 
     if (typeof interceptors?.response === "function") {

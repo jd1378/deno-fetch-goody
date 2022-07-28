@@ -1,6 +1,10 @@
 
 # Changelog
 
+## v6.1.0
+
+- add `url` prop to `ExtendedRequest` that is passed as first arg to interceptors.
+
 ## v6.0.0
 
 - remmove `validator`.

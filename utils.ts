@@ -82,7 +82,7 @@ export function isArrayBuffer(val: unknown): val is ArrayBuffer {
  * @returns {boolean} True if value is a view on an ArrayBuffer, otherwise false
  */
 export function isArrayBufferView(val: unknown): val is ArrayBufferView {
-  var result;
+  let result;
   if ((typeof ArrayBuffer !== "undefined") && (ArrayBuffer.isView)) {
     result = ArrayBuffer.isView(val);
   } else {

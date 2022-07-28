@@ -554,6 +554,44 @@ Deno.test("interaction with a server", {
       },
     );
 
+    await t.step(
+      "WrappedFetch interceptors first arg contains `url` prop",
+      async () => {
+        const wrappedFetch = wrapFetch();
+        let isUrlInInitCorrect = false;
+        // for string
+        await wrappedFetch(serverOneUrl + "/accept", {
+          interceptors: {
+            request(init) {
+              isUrlInInitCorrect = init.url.pathname === "/accept";
+            },
+          },
+        }).then((r) => r.text());
+
+        assertEquals(
+          isUrlInInitCorrect,
+          true,
+        );
+      },
+    );
+
+    await t.step(
+      "WrappedFetch throws when a baseURL is missing",
+      async () => {
+        const wrappedFetch = wrapFetch();
+        let thrown = false;
+        // for string
+        await wrappedFetch("/test").then((r) => r.text()).catch(() => {
+          thrown = true;
+        });
+
+        assertEquals(
+          thrown,
+          true,
+        );
+      },
+    );
+
     await t.step("WrappedFetch uses the given baseURL", async () => {
       const wrappedFetch = wrapFetch({
         baseURL: serverOneUrl,

@@ -32,4 +32,4 @@ export type ExtendedRequestInit =
 export type ExtendedRequest =
   & RequestInitDiff
   & Omit<RequestInit, keyof RequestInitDiff | "headers">
-  & { headers: Headers };
+  & { headers: Headers; url: URL };
