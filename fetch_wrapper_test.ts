@@ -96,7 +96,11 @@ Deno.test("interaction with a server", {
     );
 
     await t.step("WrappedFetch per request timeout option works", async () => {
-      const wrappedFetch = wrapFetch();
+      const wrappedFetch = wrapFetch(
+        {
+          timeout: 3000,
+        },
+      );
 
       let resp = await wrappedFetch(serverOneUrl + "/timeout", {
         qs: {
@@ -606,4 +610,168 @@ Deno.test("interaction with a server", {
   } finally {
     server1.close();
   }
+});
+
+Deno.test("Retry option", {
+  sanitizeOps: false,
+  sanitizeResources: false,
+}, async (t) => {
+  await t.step(
+    "WrappedFetch global retry option set to zero doesn't retry",
+    async () => {
+      const wrappedFetch = wrapFetch({
+        retry: 0,
+      });
+
+      let count = 0;
+      // see if it retries the connection by retry times:
+      try {
+        await wrappedFetch(serverOneUrl + "/count", {
+          interceptors: {
+            request() {
+              count++;
+              throw new Error("arbitrary");
+            },
+          },
+        });
+      } catch {
+      }
+
+      assertStrictEquals(
+        count,
+        1,
+      );
+    },
+  );
+
+  await t.step(
+    "WrappedFetch local retry option set to zero doesn't retry, even with global retry set",
+    async () => {
+      const wrappedFetch = wrapFetch({
+        retry: 10,
+      });
+
+      let count = 0;
+      // see if it retries the connection by retry times:
+      try {
+        await wrappedFetch(serverOneUrl + "/count", {
+          interceptors: {
+            request() {
+              count++;
+              throw new Error("arbitrary");
+            },
+          },
+          retry: 0,
+        });
+      } catch {
+      }
+
+      assertStrictEquals(
+        count,
+        1,
+      );
+    },
+  );
+
+  await t.step(
+    "WrappedFetch global retry option set to a number, retries that times after the first failure",
+    async () => {
+      const differentRetries = [1, 2, 3, 4];
+
+      for (const retry of differentRetries) {
+        const wrappedFetch = wrapFetch({
+          retry, // meaning first fail + 3 fails = 4 fails
+          retryDelay: 0,
+        });
+
+        let count = 0;
+        // see if it retries the connection by retry times:
+        try {
+          await wrappedFetch(serverOneUrl + "/count", {
+            interceptors: {
+              request() {
+                count++;
+                throw new Error("arbitrary");
+              },
+            },
+          });
+        } catch {
+        }
+
+        assertStrictEquals(
+          count,
+          retry + 1,
+        );
+      }
+    },
+  );
+
+  await t.step(
+    "WrappedFetch local retry option set to a number, retries that times after the first failure",
+    async () => {
+      const differentRetries = [1, 2, 3, 4];
+
+      for (const retry of differentRetries) {
+        const wrappedFetch = wrapFetch();
+
+        let count = 0;
+        // see if it retries the connection by retry times:
+        try {
+          await wrappedFetch(serverOneUrl + "/count", {
+            interceptors: {
+              request() {
+                count++;
+                throw new Error("arbitrary");
+              },
+            },
+            retry,
+            retryDelay: 0,
+          });
+        } catch {
+        }
+
+        assertStrictEquals(
+          count,
+          retry + 1,
+        );
+      }
+    },
+  );
+
+  await t.step(
+    "if WrappedFetch retryDelay is a function, it will be called with attempt number",
+    async () => {
+      const wrappedFetch = wrapFetch();
+
+      let count = 0;
+      let lastAttempt = 0;
+      // see if it retries the connection by retry times:
+      try {
+        await wrappedFetch(serverOneUrl + "/count", {
+          interceptors: {
+            request() {
+              count++;
+              throw new Error("arbitrary");
+            },
+          },
+          retry: 3,
+          retryDelay: (attempt) => {
+            lastAttempt = attempt;
+            assertStrictEquals(count, attempt);
+            return 0;
+          },
+        });
+      } catch {
+      }
+
+      assertStrictEquals(
+        count,
+        4,
+      );
+      assertStrictEquals(
+        lastAttempt,
+        4,
+      );
+    },
+  );
 });

@@ -144,3 +144,18 @@ export function isURLSearchParams(val: unknown): val is URLSearchParams {
   return typeof URLSearchParams !== "undefined" &&
     val instanceof URLSearchParams;
 }
+
+export function delay(ms: number) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
+export function getFirstDefined<T>(...values: [...T[], NonNullable<T>]) {
+  for (const val of values) {
+    if (val !== undefined) {
+      return val;
+    }
+  }
+  return values[values.length - 1] as NonNullable<T>;
+}

@@ -77,6 +77,10 @@ export type WrapFetchOptions = {
   baseURL?: string | URL;
   /** interceptors can be used for validating request and response and throwing errors */
   interceptors?: Interceptors;
+  /** if set, all requests will be retried this much */
+  retry?: number;
+  /** retry delay in milliseconds. if you need non linear delays, you can do that by passing in a function instead of number. defaults to `500ms`. */
+  retryDelay?: number | ((attempt: number) => number);
 };
 
 export function wrapFetch(options?: WrapFetchOptions) {
@@ -87,6 +91,8 @@ export function wrapFetch(options?: WrapFetchOptions) {
     timeout = 99999999,
     headers,
     baseURL,
+    retry = 0,
+    retryDelay = 500,
   } = options || {};
 
   return async function wrappedFetch(
@@ -232,31 +238,64 @@ export function wrapFetch(options?: WrapFetchOptions) {
       );
     }
 
-    let timeoutId: undefined | number;
-    if (("timeout" in interceptedInit && interceptedInit.timeout) || timeout) {
-      const abortController = new AbortController();
-      timeoutId = setTimeout(
-        () => abortController.abort(new Error("Timeout has been exceeded")),
-        (interceptedInit as ExtendedRequestInit).timeout || timeout,
-      );
-      interceptedInit.signal = abortController.signal;
-    }
+    let response: Response;
+    let attempt = 0;
+    let retryLimit = utils.getFirstDefined(
+      (interceptedInit as ExtendedRequestInit).retry,
+      retry,
+    );
+    if (retryLimit) retryLimit++; // we need to take into account the first time. so we retry times exactly as specified
+    do {
+      let timeoutId: undefined | number;
 
-    if (typeof interceptors?.request === "function") {
-      await interceptors.request(interceptedInit as ExtendedRequest);
-    }
+      try {
+        if (typeof interceptors?.request === "function") {
+          await interceptors.request(interceptedInit as ExtendedRequest);
+        }
 
-    if (
-      "interceptors" in interceptedInit &&
-      typeof interceptedInit.interceptors?.request === "function"
-    ) {
-      await interceptedInit.interceptors.request(
-        interceptedInit as ExtendedRequest,
-      );
-    }
+        if (
+          "interceptors" in interceptedInit &&
+          typeof interceptedInit.interceptors?.request === "function"
+        ) {
+          await interceptedInit.interceptors.request(
+            interceptedInit as ExtendedRequest,
+          );
+        }
 
-    const response = await fetch(input, interceptedInit as RequestInit);
-    clearTimeout(timeoutId);
+        if (
+          ("timeout" in interceptedInit) || timeout
+        ) {
+          const abortController = new AbortController();
+          timeoutId = setTimeout(
+            () => abortController.abort(new Error("Timeout has been exceeded")),
+            utils.getFirstDefined(
+              (interceptedInit as ExtendedRequestInit).timeout,
+              timeout,
+            ),
+          );
+          interceptedInit.signal = abortController.signal;
+        }
+
+        response = await fetch(input, interceptedInit as RequestInit);
+        clearTimeout(timeoutId);
+      } catch (e) {
+        clearTimeout(timeoutId);
+        if (!retryLimit || attempt >= retryLimit) throw e;
+        attempt++;
+        const delayVal = utils.getFirstDefined(
+          (interceptedInit as ExtendedRequestInit).retryDelay,
+          retryDelay,
+        );
+        if (typeof delayVal === "function") {
+          await utils.delay(delayVal(attempt));
+        } else {
+          await utils.delay(delayVal);
+        }
+      }
+    } while (attempt < retryLimit);
+
+    // because it would throw if otherwise and not reach here
+    response = response!;
 
     if (typeof interceptors?.response === "function") {
       await interceptors.response(interceptedInit as ExtendedRequest, response);

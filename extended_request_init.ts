@@ -11,6 +11,10 @@ interface RequestInitDiff {
   interceptors?: Interceptors;
   /** time in milliseconds which after the request should be cancelled and rejected */
   timeout?: number;
+  /** if set, all requests will be retried this much. it's in addition to first request. so a retry with value of 1 will send 2 requests in total. */
+  retry?: number;
+  /** retry delay in milliseconds. if you need non linear delays, you can do that by passing in a function instead of number. defaults to `500ms`. */
+  retryDelay?: number | ((attempt: number) => number);
 }
 
 export type Interceptors = {
