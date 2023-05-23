@@ -14,10 +14,17 @@ interface RequestInitDiff {
   /** if set, all requests will be retried this much. it's in addition to first request. so a retry with value of 1 will send 2 requests in total. */
   retry?: number;
   /** retry delay in milliseconds. if you need non linear delays, you can do that by passing in a function instead of number. defaults to `500ms`. */
-  retryDelay?:
-    | number
-    | ((attempt: number, init: RequestInit | ExtendedRequestInit) => number);
+  retryDelay?: number | RetryDelayFunction;
 }
+
+export type RetryDelayFunction = (
+  /** current attempt (1 = it is going to retry for the first time and so on) */
+  attempt: number,
+  /** unified input */
+  input: URL,
+  /** current init object */
+  init: ExtendedRequestInit,
+) => number;
 
 export type Interceptors = {
   /** function that is called just before a request is sent*/

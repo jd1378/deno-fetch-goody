@@ -4,7 +4,7 @@ import {
   assertStrictEquals,
 } from "https://deno.land/std@0.119.0/testing/asserts.ts";
 import { Server } from "https://deno.land/std@0.119.0/http/server.ts";
-import { wrapFetch } from "./mod.ts";
+import { ExtendedRequestInit, wrapFetch } from "./mod.ts";
 import { delay } from "https://deno.land/std@0.119.0/async/delay.ts";
 const serverOneUrl = "http://localhost:54933";
 
@@ -739,12 +739,14 @@ Deno.test("Retry option", {
   );
 
   await t.step(
-    "if WrappedFetch retryDelay is a function, it will be called with attempt number and request init",
+    "if WrappedFetch retryDelay is a function, it will be called with attempt number, input url and request init",
     async () => {
       const wrappedFetch = wrapFetch();
 
       let count = 0;
       let lastAttempt = 0;
+      let lastInput: URL | undefined;
+      let lastInit: ExtendedRequestInit | undefined;
       // see if it retries the connection by retry times:
       try {
         await wrappedFetch(serverOneUrl + "/count", {
@@ -756,11 +758,11 @@ Deno.test("Retry option", {
             },
           },
           retry: 3,
-          retryDelay: (attempt, init) => {
+          retryDelay: (attempt, input, init) => {
             lastAttempt = attempt;
+            lastInput = input;
+            lastInit = init;
             assertStrictEquals(count, attempt);
-            assertStrictEquals(!!init, true);
-            assertStrictEquals(init.body, "foo");
             return 0;
           },
         });
@@ -768,12 +770,24 @@ Deno.test("Retry option", {
       }
 
       assertStrictEquals(
+        lastInput?.toString(),
+        serverOneUrl + "/count",
+        "didnt received the input in retry function",
+      );
+      assertStrictEquals(
+        lastInit?.body,
+        "foo",
+        "didnt receive the init body in retryDelay",
+      );
+      assertStrictEquals(
         count,
         4,
+        "retry count is incorrect",
       );
       assertStrictEquals(
         lastAttempt,
         4,
+        "attempt count is incorrect",
       );
     },
   );

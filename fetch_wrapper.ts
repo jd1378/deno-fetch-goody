@@ -3,6 +3,7 @@ import {
   ExtendedRequest,
   ExtendedRequestInit,
   Interceptors,
+  RetryDelayFunction,
 } from "./extended_request_init.ts";
 
 /**
@@ -80,9 +81,7 @@ export type WrapFetchOptions = {
   /** if set, all requests will be retried this much */
   retry?: number;
   /** retry delay in milliseconds. if you need non linear delays, you can do that by passing in a function instead of number. defaults to `500ms`. */
-  retryDelay?:
-    | number
-    | ((attempt: number, init: RequestInit | ExtendedRequestInit) => number);
+  retryDelay?: number | RetryDelayFunction;
 };
 
 export function wrapFetch(options?: WrapFetchOptions) {
@@ -289,7 +288,7 @@ export function wrapFetch(options?: WrapFetchOptions) {
           retryDelay,
         );
         if (typeof delayVal === "function") {
-          await utils.delay(delayVal(attempt, interceptedInit));
+          await utils.delay(delayVal(attempt, input, interceptedInit));
         } else {
           await utils.delay(delayVal);
         }

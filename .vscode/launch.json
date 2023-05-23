@@ -17,7 +17,7 @@
         "--allow-all",
         "--allow-env"
       ],
-      "outputCapture": "std",
+      "outputCapture": "std"
     },
     {
       "name": "Debug Run Deno",
@@ -67,7 +67,7 @@
         "--allow-all",
         "--allow-env"
       ],
-      "outputCapture": "std",
+      "outputCapture": "std"
     }
   ]
 }
