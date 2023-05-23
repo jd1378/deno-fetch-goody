@@ -739,7 +739,7 @@ Deno.test("Retry option", {
   );
 
   await t.step(
-    "if WrappedFetch retryDelay is a function, it will be called with attempt number",
+    "if WrappedFetch retryDelay is a function, it will be called with attempt number and request init",
     async () => {
       const wrappedFetch = wrapFetch();
 
@@ -748,6 +748,7 @@ Deno.test("Retry option", {
       // see if it retries the connection by retry times:
       try {
         await wrappedFetch(serverOneUrl + "/count", {
+          body: "foo",
           interceptors: {
             request() {
               count++;
@@ -755,9 +756,11 @@ Deno.test("Retry option", {
             },
           },
           retry: 3,
-          retryDelay: (attempt) => {
+          retryDelay: (attempt, init) => {
             lastAttempt = attempt;
             assertStrictEquals(count, attempt);
+            assertStrictEquals(!!init, true);
+            assertStrictEquals(init.body, "foo");
             return 0;
           },
         });

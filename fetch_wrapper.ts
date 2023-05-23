@@ -80,7 +80,9 @@ export type WrapFetchOptions = {
   /** if set, all requests will be retried this much */
   retry?: number;
   /** retry delay in milliseconds. if you need non linear delays, you can do that by passing in a function instead of number. defaults to `500ms`. */
-  retryDelay?: number | ((attempt: number) => number);
+  retryDelay?:
+    | number
+    | ((attempt: number, init: RequestInit | ExtendedRequestInit) => number);
 };
 
 export function wrapFetch(options?: WrapFetchOptions) {
@@ -287,7 +289,7 @@ export function wrapFetch(options?: WrapFetchOptions) {
           retryDelay,
         );
         if (typeof delayVal === "function") {
-          await utils.delay(delayVal(attempt));
+          await utils.delay(delayVal(attempt, interceptedInit));
         } else {
           await utils.delay(delayVal);
         }
