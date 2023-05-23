@@ -288,7 +288,9 @@ export function wrapFetch(options?: WrapFetchOptions) {
           retryDelay,
         );
         if (typeof delayVal === "function") {
-          await utils.delay(delayVal(attempt, input, interceptedInit));
+          await utils.delay(
+            delayVal(attempt, interceptedInit as ExtendedRequest),
+          );
         } else {
           await utils.delay(delayVal);
         }

@@ -4,7 +4,7 @@ import {
   assertStrictEquals,
 } from "https://deno.land/std@0.119.0/testing/asserts.ts";
 import { Server } from "https://deno.land/std@0.119.0/http/server.ts";
-import { ExtendedRequestInit, wrapFetch } from "./mod.ts";
+import { ExtendedRequest, wrapFetch } from "./mod.ts";
 import { delay } from "https://deno.land/std@0.119.0/async/delay.ts";
 const serverOneUrl = "http://localhost:54933";
 
@@ -468,11 +468,19 @@ Deno.test("interaction with a server", {
           interceptors: {
             request(init) {
               assertStrictEquals(init.method, "delete");
+              assertStrictEquals(
+                init.url.toString(),
+                serverOneUrl + "/user-agent",
+              );
               requestInterceptorRan = true;
             },
             response(init, response) {
               assertStrictEquals(response.status, 200);
               assertStrictEquals(init.method, "delete");
+              assertStrictEquals(
+                init.url.toString(),
+                serverOneUrl + "/user-agent",
+              );
               responseInterceptorRan = true;
             },
           },
@@ -745,8 +753,7 @@ Deno.test("Retry option", {
 
       let count = 0;
       let lastAttempt = 0;
-      let lastInput: URL | undefined;
-      let lastInit: ExtendedRequestInit | undefined;
+      let lastInit: ExtendedRequest | undefined;
       // see if it retries the connection by retry times:
       try {
         await wrappedFetch(serverOneUrl + "/count", {
@@ -758,9 +765,8 @@ Deno.test("Retry option", {
             },
           },
           retry: 3,
-          retryDelay: (attempt, input, init) => {
+          retryDelay: (attempt, init) => {
             lastAttempt = attempt;
-            lastInput = input;
             lastInit = init;
             assertStrictEquals(count, attempt);
             return 0;
@@ -770,14 +776,14 @@ Deno.test("Retry option", {
       }
 
       assertStrictEquals(
-        lastInput?.toString(),
-        serverOneUrl + "/count",
-        "didnt received the input in retry function",
-      );
-      assertStrictEquals(
         lastInit?.body,
         "foo",
         "didnt receive the init body in retryDelay",
+      );
+      assertStrictEquals(
+        lastInit?.url.toString(),
+        serverOneUrl + "/count",
+        "didnt receive the url in retryDelay",
       );
       assertStrictEquals(
         count,

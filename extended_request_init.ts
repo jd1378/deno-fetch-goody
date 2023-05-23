@@ -20,10 +20,7 @@ interface RequestInitDiff {
 export type RetryDelayFunction = (
   /** current attempt (1 = it is going to retry for the first time and so on) */
   attempt: number,
-  /** unified input */
-  input: URL,
-  /** current init object */
-  init: ExtendedRequestInit,
+  init: ExtendedRequest,
 ) => number;
 
 export type Interceptors = {
