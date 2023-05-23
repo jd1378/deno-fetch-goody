@@ -1,5 +1,9 @@
 # Changelog
 
+## v6.2.2
+
+- update `retryDelay` signature for more consistency with other stuff like interceptors.
+
 ## v6.2.1
 
 - update `retryDelay` signature
