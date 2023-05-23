@@ -5,7 +5,9 @@ This library offers a fetch wrapper that can:
 - automatically add `Content-Type` header
 - directly use objects for `body` as json (see below)
 - send `form`, `formData`, `qs` (query string) easily from objects
-- accept a timeout option and abort when timeout is reached
+- accept a `timeout` option and abort when timeout is reached
+- accept a `retry` option and retry the request when it throws
+- accept a `retryDelay` option to wait before retrying. it can be a function.
 - add `Accept` header with value `application/json, text/plain, */*` if not already set by you
 - set global headers when creating the wrapper
 - set a `baseURL` when creating the wrapper
@@ -18,7 +20,7 @@ This library offers a fetch wrapper that can:
 you can import `wrapFetch` from `mod.ts` file.
 
 ```ts
-export { wrapFetch } from 'https://deno.land/x/fetch_goody@v6.1.0/mod.ts';
+export { wrapFetch } from 'https://deno.land/x/fetch_goody@v6.2.0/mod.ts';
 ```
 
 ### wrapFetch
