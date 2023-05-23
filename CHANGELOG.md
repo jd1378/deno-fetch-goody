@@ -1,8 +1,14 @@
 # Changelog
 
+## v7.0.0
+
+- break `retryDelay` function signature to add error that caused retry and an
+  abort controller to cancel retrying.
+
 ## v6.2.2
 
-- update `retryDelay` signature for more consistency with other stuff like interceptors.
+- update `retryDelay` signature for more consistency with other stuff like
+  interceptors.
 
 ## v6.2.1
 

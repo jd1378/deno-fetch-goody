@@ -765,9 +765,9 @@ Deno.test("Retry option", {
             },
           },
           retry: 3,
-          retryDelay: (attempt, init) => {
+          retryDelay: ({ attempt, request }) => {
             lastAttempt = attempt;
-            lastInit = init;
+            lastInit = request;
             assertStrictEquals(count, attempt);
             return 0;
           },
@@ -794,6 +794,47 @@ Deno.test("Retry option", {
         lastAttempt,
         4,
         "attempt count is incorrect",
+      );
+    },
+  );
+
+  await t.step(
+    "retryDelay can be aborted",
+    async () => {
+      const wrappedFetch = wrapFetch();
+
+      let count = 0;
+
+      try {
+        await wrappedFetch(serverOneUrl + "/count", {
+          body: "foo",
+          interceptors: {
+            request() {
+              count++;
+              throw new Error("arbitrary");
+            },
+          },
+          retry: 10,
+          retryDelay: ({ abortController }) => {
+            if (count >= 2) {
+              // means if we already failed 2 times, do not retry anymore
+              abortController.abort();
+            }
+            return 0;
+          },
+        });
+      } catch {
+      }
+
+      assert(
+        count < 10,
+        "count (" + count + ") is bigger than retry (10)",
+      );
+
+      assertStrictEquals(
+        count,
+        2,
+        "retry count is " + count + " but should be " + 2,
       );
     },
   );

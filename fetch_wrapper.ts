@@ -288,9 +288,16 @@ export function wrapFetch(options?: WrapFetchOptions) {
           retryDelay,
         );
         if (typeof delayVal === "function") {
+          const retryAbortController = new AbortController();
           await utils.delay(
-            delayVal(attempt, interceptedInit as ExtendedRequest),
+            delayVal({
+              attempt,
+              request: interceptedInit as ExtendedRequest,
+              error: e,
+              abortController: retryAbortController,
+            }),
           );
+          retryAbortController.signal.throwIfAborted();
         } else {
           await utils.delay(delayVal);
         }

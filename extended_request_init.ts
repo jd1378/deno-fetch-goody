@@ -18,9 +18,15 @@ interface RequestInitDiff {
 }
 
 export type RetryDelayFunction = (
-  /** current attempt (1 = it is going to retry for the first time and so on) */
-  attempt: number,
-  init: ExtendedRequest,
+  options: {
+    /** current attempt (1 = it is going to retry for the first time and so on) */
+    attempt: number;
+    request: ExtendedRequest;
+    /** the error causing retry */
+    error: unknown;
+    /** calling this AbortController's abort will stop retrying the request */
+    abortController: AbortController;
+  },
 ) => number;
 
 export type Interceptors = {
