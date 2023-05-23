@@ -2,7 +2,7 @@
 
 ## v6.2.1
 
-- update `retryDelay` signiture
+- update `retryDelay` signature
 
 ## v6.2.0
 
