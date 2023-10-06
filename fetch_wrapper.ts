@@ -105,7 +105,9 @@ export function wrapFetch(options?: WrapFetchOptions) {
       return await fetch(input);
     }
 
-    const interceptedInit = init || {};
+    const interceptedInit = (init || {}) as
+      & (ExtendedRequestInit | RequestInit)
+      & { headers: Headers }; // to fix header type error
 
     if (!(interceptedInit.headers instanceof Headers)) {
       interceptedInit.headers = new Headers(interceptedInit.headers || {});
@@ -279,6 +281,7 @@ export function wrapFetch(options?: WrapFetchOptions) {
 
         response = await fetch(input, interceptedInit as RequestInit);
         clearTimeout(timeoutId);
+        break; // to break out of while
       } catch (e) {
         clearTimeout(timeoutId);
         if (!retryLimit || attempt >= retryLimit) throw e;
