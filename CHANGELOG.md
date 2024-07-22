@@ -1,5 +1,13 @@
 # Changelog
 
+## v7.0.3
+
+- change buffer import to use "node:buffer" to publish on jsr
+
+## v7.0.1
+
+- fix retry causing the request to be sent multiple times
+
 ## v7.0.0
 
 - break `retryDelay` function signature to add error that caused retry and an
