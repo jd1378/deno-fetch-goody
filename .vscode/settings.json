@@ -7,10 +7,6 @@
   "[typescriptreact]": {
     "editor.defaultFormatter": "denoland.vscode-deno"
   },
-  "deno.unstable": true,
   "deno.lint": true,
-  "debug.javascript.unmapMissingSources": true,
-  "deno.import_intellisense_origins": {
-    "https://deno.land": true
-  }
+  "debug.javascript.unmapMissingSources": true, 
 }

@@ -1,4 +1,4 @@
-import type { Buffer } from "https://deno.land/std@0.85.0/node/buffer.ts";
+import type { Buffer } from "node:buffer";
 
 // the following is from axios library with a bit of touch up for ts
 
@@ -88,7 +88,7 @@ export function isArrayBufferView(val: unknown): val is ArrayBufferView {
   } else {
     // deno-lint-ignore ban-ts-comment
     // @ts-ignore
-    result = (val) && (val.buffer) && (val.buffer instanceof ArrayBuffer);
+    result = val && (val.buffer) && (val.buffer instanceof ArrayBuffer);
   }
   return result;
 }

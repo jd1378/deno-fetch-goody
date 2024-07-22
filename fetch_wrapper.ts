@@ -5,6 +5,7 @@ import type {
   Interceptors,
   RetryDelayFunction,
 } from "./extended_request_init.ts";
+import type { Buffer } from "node:buffer";
 
 /**
  * Transforms data and adds corresponding headers if possible.
@@ -14,6 +15,7 @@ function transformData(
     | string
     | Record<string, unknown>
     | ArrayBuffer
+    | Buffer
     | Blob
     | ArrayBufferView
     | FormData
@@ -26,6 +28,7 @@ function transformData(
 ):
   | string
   | ArrayBuffer
+  | Buffer
   | Blob
   | ArrayBufferView
   | FormData
