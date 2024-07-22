@@ -1,5 +1,9 @@
 # Changelog
 
+## v7.0.4
+
+- update readme
+
 ## v7.0.3
 
 - change buffer import to use "node:buffer" to publish on jsr
