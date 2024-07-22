@@ -1,5 +1,5 @@
 import * as utils from "./utils.ts";
-import {
+import type {
   ExtendedRequest,
   ExtendedRequestInit,
   Interceptors,
@@ -84,7 +84,12 @@ export type WrapFetchOptions = {
   retryDelay?: number | RetryDelayFunction;
 };
 
-export function wrapFetch(options?: WrapFetchOptions) {
+export function wrapFetch(
+  options?: WrapFetchOptions,
+): (
+  input: string | Request | URL,
+  init?: ExtendedRequestInit | RequestInit | undefined,
+) => Promise<Response> {
   const {
     fetch = globalThis.fetch,
     userAgent,

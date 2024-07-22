@@ -1,5 +1,5 @@
 {
   "name": "@jd1378/fetch-goody",
-  "version": "7.0.1",
+  "version": "7.0.2",
   "exports": "./mod.ts"
 }

@@ -4,7 +4,7 @@ import {
   assertStrictEquals,
 } from "https://deno.land/std@0.119.0/testing/asserts.ts";
 import { Server } from "https://deno.land/std@0.119.0/http/server.ts";
-import { ExtendedRequest, wrapFetch } from "./mod.ts";
+import { type ExtendedRequest, wrapFetch } from "./mod.ts";
 import { delay } from "https://deno.land/std@0.119.0/async/delay.ts";
 const serverOneUrl = "http://localhost:54933";
 
@@ -643,6 +643,7 @@ Deno.test("Retry option", {
           },
         });
       } catch {
+        // no need
       }
 
       assertStrictEquals(
@@ -672,6 +673,7 @@ Deno.test("Retry option", {
           retry: 0,
         });
       } catch {
+        // no need
       }
 
       assertStrictEquals(
@@ -704,6 +706,7 @@ Deno.test("Retry option", {
             },
           });
         } catch {
+          // no need
         }
 
         assertStrictEquals(
@@ -736,6 +739,7 @@ Deno.test("Retry option", {
             retryDelay: 0,
           });
         } catch {
+          // no need
         }
 
         assertStrictEquals(
@@ -773,6 +777,7 @@ Deno.test("Retry option", {
           },
         });
       } catch {
+        // no need
       }
 
       assertStrictEquals(
@@ -824,6 +829,7 @@ Deno.test("Retry option", {
           },
         });
       } catch {
+        // no need
       }
 
       assert(
