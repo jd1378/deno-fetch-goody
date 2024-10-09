@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
   push:
     tags:
-      - "v*.*.*"
+      - "*.*.*"
 
 jobs:
   publish:
@@ -20,4 +20,3 @@ jobs:
 
       - name: Release
         uses: softprops/action-gh-release@v2
-        if: startsWith(github.ref, 'refs/tags/')
