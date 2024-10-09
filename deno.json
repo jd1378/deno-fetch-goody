@@ -1,6 +1,6 @@
 {
   "name": "@jd1378/fetch-goody",
-  "version": "7.0.4",
+  "version": "7.0.5",
   "exports": "./mod.ts",
   "imports": { "@types/node": "npm:@types/node@^22.7.5" }
 }
