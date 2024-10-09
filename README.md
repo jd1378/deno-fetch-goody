@@ -22,9 +22,9 @@ This library offers a fetch wrapper that can:
 you can import `wrapFetch` from `mod.ts` file.
 
 ```ts
-import { wrapFetch } from "https://deno.land/x/fetch_goody@v7.0.4/mod.ts";
+import { wrapFetch } from "https://deno.land/x/fetch_goody@v7.0.6/mod.ts";
 // or
-import { wrapFetch } from "jsr:@jd1378/fetch-goody@^7.0.4";
+import { wrapFetch } from "jsr:@jd1378/fetch-goody@^7.0.6";
 ```
 
 ### wrapFetch
