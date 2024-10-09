@@ -75,6 +75,7 @@ function transformData(
   return data;
 }
 
+/** `wrapFetch` function options. */
 export type WrapFetchOptions = {
   /** your own fetch function. defaults to global fetch. */
   fetch?: typeof fetch;
@@ -94,6 +95,7 @@ export type WrapFetchOptions = {
   retryDelay?: number | RetryDelayFunction;
 };
 
+/** Wraps the global fetch, or your own fetch if provided, and extends the init option with more functionality.  */
 export function wrapFetch(
   options?: WrapFetchOptions,
 ): (

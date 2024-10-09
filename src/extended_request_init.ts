@@ -17,6 +17,7 @@ interface RequestInitDiff {
   retryDelay?: number | RetryDelayFunction;
 }
 
+/** the type of function that you can pass to `retryDelay` option of the extended init */
 export type RetryDelayFunction = (
   options: {
     /** current attempt (1 = it is going to retry for the first time and so on) */
@@ -29,6 +30,7 @@ export type RetryDelayFunction = (
   },
 ) => number;
 
+/** The type for interceptors you can pass to the extended init */
 export type Interceptors = {
   /** function that is called just before a request is sent*/
   request?: (
@@ -41,10 +43,14 @@ export type Interceptors = {
   ) => void | Promise<void>;
 };
 
+/** Fetch's `RequestInit` with the extra options */
 export type ExtendedRequestInit =
   & RequestInitDiff
   & Omit<RequestInit, keyof RequestInitDiff>;
 
+/**
+ * @see {@link ExtendedRequestInit}
+ */
 export type ExtendedRequest =
   & RequestInitDiff
   & Omit<RequestInit, keyof RequestInitDiff | "headers">
