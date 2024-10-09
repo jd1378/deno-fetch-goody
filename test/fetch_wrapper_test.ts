@@ -4,7 +4,7 @@ import {
   assertStrictEquals,
 } from "jsr:@std/assert@1.0.6";
 import { Server } from "https://deno.land/std@0.119.0/http/server.ts";
-import { type ExtendedRequest, wrapFetch } from "./mod.ts";
+import { type ExtendedRequest, wrapFetch } from "../mod.ts";
 import { delay } from "jsr:@std/async/delay";
 const serverOneUrl = "http://localhost:54933";
 

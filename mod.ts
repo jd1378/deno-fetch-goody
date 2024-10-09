@@ -1,1 +1,1 @@
-export * from "./fetch_wrapper.ts";
+export * from "./src/fetch_wrapper.ts";

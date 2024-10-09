@@ -2,5 +2,15 @@
   "name": "@jd1378/fetch-goody",
   "version": "7.0.5",
   "exports": "./mod.ts",
-  "imports": { "@types/node": "npm:@types/node@^22.7.5" }
+  "imports": { "@types/node": "npm:@types/node@^22.7.5" },
+  "publish": {
+    "include": [
+      "LICENSE",
+      "README.md",
+      "src",
+      "mod.ts",
+      "deno.json",
+      "deno.lock"
+    ]
+  }
 }
