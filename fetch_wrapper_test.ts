@@ -2,10 +2,10 @@ import {
   assert,
   assertEquals,
   assertStrictEquals,
-} from "https://deno.land/std@0.119.0/testing/asserts.ts";
+} from "jsr:@std/assert@1.0.6";
 import { Server } from "https://deno.land/std@0.119.0/http/server.ts";
 import { type ExtendedRequest, wrapFetch } from "./mod.ts";
-import { delay } from "https://deno.land/std@0.119.0/async/delay.ts";
+import { delay } from "jsr:@std/async/delay";
 const serverOneUrl = "http://localhost:54933";
 
 async function server1Handler(request: Request): Promise<Response> {
@@ -90,8 +90,11 @@ Deno.test("interaction with a server", {
         }
         await delay(10);
 
-        assert(fetchError !== undefined, "timeout has not thrown");
-        assertStrictEquals(fetchError.message, "Timeout has been exceeded");
+        assert(!!fetchError, "timeout has not thrown");
+        assertStrictEquals(
+          (fetchError as Error).message,
+          "Timeout has been exceeded",
+        );
       },
     );
 
@@ -129,8 +132,11 @@ Deno.test("interaction with a server", {
         fetchError = err;
       }
       assert(resp === "", "response should not be available");
-      assert(fetchError !== undefined, "timeout has not thrown");
-      assertStrictEquals(fetchError.message, "Timeout has been exceeded");
+      assert(!!fetchError, "timeout has not thrown");
+      assertStrictEquals(
+        (fetchError as Error).message,
+        "Timeout has been exceeded",
+      );
 
       // dummy fetch for letting the async ops finish
       // await (await fetch(serverOneUrl + "/accept")).text();

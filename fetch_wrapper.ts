@@ -7,6 +7,13 @@ import type {
 } from "./extended_request_init.ts";
 import type { Buffer } from "node:buffer";
 
+export type {
+  ExtendedRequest,
+  ExtendedRequestInit,
+  Interceptors,
+  RetryDelayFunction,
+};
+
 /**
  * Transforms data and adds corresponding headers if possible.
  */
